@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SingularSystemsTechnicalAssessment.Server.Application_Layer.Interfaces.Repositories;
 using SingularSystemsTechnicalAssessment.Server.Infrastructure_Layer;
 using SingularSystemsTechnicalAssessment.Server.Infrastructure_Layer.Repository;
+using SingularSystemsTechnicalAssessment.Server.src.Infrastructure_Layer;
 using System;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -40,6 +41,13 @@ var app = builder.Build();
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
+
+//Add DataToInMemDB
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AssessmentDbContext>();
+    DefaultDBData.AddDefaultData(db);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

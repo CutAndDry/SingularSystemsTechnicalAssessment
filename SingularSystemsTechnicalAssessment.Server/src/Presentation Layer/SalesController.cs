@@ -20,44 +20,35 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
             _productRepository = productRepository;
         }
 
-        // GET: api/Sales
+        // GET: api/Products page 1 => page 10
         [HttpGet]
-        public async Task<IActionResult> GetAll(
-            [FromQuery] int? productId,
-            [FromQuery] DateTime? startDate,
-            [FromQuery] DateTime? endDate,
-            [FromQuery] int page = 1)
+        public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            const int pageSize = 50;
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 10;
 
-            var salesQuery = (await _saleRepository.GetAllAsync()).AsQueryable();
+            var allProducts = await _productRepository.GetAllAsync();
 
-            if (productId.HasValue)
-                salesQuery = salesQuery.Where(s => s.ProductId == productId.Value);
-
-            if (startDate.HasValue)
-                salesQuery = salesQuery.Where(s => s.SaleDate >= startDate.Value);
-
-            if (endDate.HasValue)
-                salesQuery = salesQuery.Where(s => s.SaleDate <= endDate.Value);
-
-            var pagedSales = salesQuery
+            var pagedProducts = allProducts
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();
 
-            var result = pagedSales.Select(s => new SaleDto
+            var result = pagedProducts.Select(p => new ProductDto
             {
-                Id = s.Id,
-                ProductId = s.ProductId,
-                ProductName = s.Product.Name,
-                SaleDate = s.SaleDate,
-                Quantity = s.Quantity,
-                UnitPrice = s.UnitPrice
+                Id = p.Id,
+                Name = p.Name,
+                Price = p.Price,
+                Description = p.Description,
+                TotalSales = p.Sales.Sum(s => s.Quantity),
+                TotalRevenue = p.Sales.Sum(s => s.Quantity * s.UnitPrice)
             });
+
+           
 
             return Ok(result);
         }
+
 
         // GET: api/Sales/{id}
         [HttpGet("{id}")]
