@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SingularSystemsTechnicalAssessment.Server.Infrastructure_Layer.Models;
+using SingularSystemsTechnicalAssessment.Server.Domain_Layer.Entities;
 using System;
 
 namespace SingularSystemsTechnicalAssessment.Server.Infrastructure_Layer

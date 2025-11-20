@@ -1,4 +1,4 @@
-﻿namespace SingularSystemsTechnicalAssessment.Server.Infrastructure_Layer.Models
+﻿namespace SingularSystemsTechnicalAssessment.Server.Domain_Layer.Entities
 {
     public class Product
     {
