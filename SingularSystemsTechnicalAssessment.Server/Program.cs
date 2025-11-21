@@ -24,7 +24,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("VueCors", policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173")
+            .WithOrigins("https://localhost:5173")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -49,6 +49,10 @@ using (var scope = app.Services.CreateScope())
     DefaultDBData.AddDefaultData(db);
 }
 
+
+app.UseCors("VueCors");
+
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -59,8 +63,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
-
-app.UseCors("VueCors");
 
 app.MapControllers();
 
