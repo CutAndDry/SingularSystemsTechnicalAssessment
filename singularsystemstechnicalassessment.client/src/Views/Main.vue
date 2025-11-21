@@ -14,5 +14,11 @@
   body {
     margin: 0;
     font-family: Avenir, Helvetica, Arial, sans-serif;
+   
   }
+  #app {
+    width: 100%;
+  }
+
+
 </style>

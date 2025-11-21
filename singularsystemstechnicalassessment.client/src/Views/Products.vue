@@ -2,39 +2,34 @@
   <div class="container">
     <h1>Products</h1>
 
-    <!-- Add Product Form -->
     <form @submit.prevent="addProduct" class="add-product-form">
+      <p class="input-label">Product Name</p>
       <input v-model="newProduct.name" type="text" placeholder="Product Name" required />
+      <p class="input-label">Description</p>
       <input v-model="newProduct.description" type="text" placeholder="Description" />
+      <p class="input-label">Price</p>
       <input v-model.number="newProduct.price" type="number" placeholder="Price" required />
       <button type="submit">Add Product</button>
     </form>
 
-    <!-- Products Table -->
     <table class="products-table">
       <thead>
         <tr>
           <th>ID</th>
           <th>Name</th>
-          <th>Description</th>
           <th>Price</th>
-          <th>Total Sales</th>
-          <th>Total Revenue</th>
         </tr>
       </thead>
+
       <tbody>
         <tr v-for="product in products" :key="product.id">
           <td>{{ product.id }}</td>
           <td>{{ product.name }}</td>
-          <td>{{ product.description || '-' }}</td>
           <td>{{ product.price.toFixed(2) }}</td>
-          <td>{{ product.totalSales }}</td>
-          <td>{{ product.totalRevenue.toFixed(2) }}</td>
         </tr>
       </tbody>
     </table>
 
-    <!-- Pagination Controls -->
     <div class="pagination">
       <button @click="prevPage" :disabled="pageNumber <= 1">Previous</button>
       <span>Page {{ pageNumber }} of {{ totalPages }}</span>
@@ -47,10 +42,13 @@
   import { ref, onMounted } from 'vue';
   import { getAllProducts, createProduct } from '../services/productService.js';
 
+
   const products = ref([]);
+
   const pageNumber = ref(1);
   const pageSize = ref(10);
   const totalPages = ref(1);
+
 
   const newProduct = ref({
     name: '',
@@ -60,23 +58,24 @@
 
   const fetchProducts = async () => {
     try {
-      const response = await getAllProducts(pageNumber.value, pageSize.value);
-      products.value = response.data.items;
-      totalPages.value = response.data.totalPages;
-    } catch (error) {
-      console.error('Error fetching products:', error);
+      const res = await getAllProducts(pageNumber.value, pageSize.value);
+
+      products.value = res.data.items;
+      totalPages.value = res.data.totalPages;
+    } catch (err) {
+      console.error('Error fetching products:', err);
     }
   };
 
   const addProduct = async () => {
     try {
       await createProduct(newProduct.value);
-      // Clear form
+
       newProduct.value = { name: '', description: '', price: 0 };
-      // Refresh table
+
       fetchProducts();
-    } catch (error) {
-      console.error('Error adding product:', error);
+    } catch (err) {
+      console.error('Error adding product:', err);
     }
   };
 
@@ -105,8 +104,38 @@
   }
 
   .add-product-form {
-    display: flex;
+    width:100%;
     gap: 0.5rem;
     margin-bottom: 1rem;
+  }
+
+  .products-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+  }
+
+    .products-table th,
+    .products-table td {
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+    }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+  }
+  .add-product-form input {
+    padding: 8px;
+    margin-bottom: 5px;
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  .input-label {
+    margin: 0;
+    font-weight: bold;
+    padding-top: 10px;
   }
 </style>
