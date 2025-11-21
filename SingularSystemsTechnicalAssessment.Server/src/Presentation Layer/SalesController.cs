@@ -20,31 +20,19 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
             _productRepository = productRepository;
         }
 
-        // GET: api/Products page 1 => page 10
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetAll()
         {
-            if (page < 1) page = 1;
-            if (pageSize < 1) pageSize = 10;
+            var products = await _productRepository.GetAllAsync();
 
-            var allProducts = await _productRepository.GetAllAsync();
-
-            var pagedProducts = allProducts
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
-
-            var result = pagedProducts.Select(p => new ProductDto
+            var result = products.Select(p => new ProductListDto
             {
                 Id = p.Id,
                 Name = p.Name,
                 Price = p.Price,
-                Description = p.Description,
                 TotalSales = p.Sales.Sum(s => s.Quantity),
                 TotalRevenue = p.Sales.Sum(s => s.Quantity * s.UnitPrice)
             });
-
-           
 
             return Ok(result);
         }
