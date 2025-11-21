@@ -35,8 +35,8 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
         }
 
         // GET: api/Products?pageNumber=1&pageSize=10
-        [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        [HttpGet("GetAllPagination")]
+        public async Task<IActionResult> GetAllPagination([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             if (pageNumber < 1) pageNumber = 1;
             if (pageSize < 1) pageSize = 10;
@@ -57,7 +57,7 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
                 })
                 .ToList();
 
-            var response = new PagedResult<ProductListDto>
+            var response = new ProductPagedResult<ProductListDto>
             {
                 Items = items,
                 PageNumber = pageNumber,
@@ -87,7 +87,7 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
                 TotalSales = product.Sales.Sum(s => s.Quantity),
                 TotalRevenue = product.Sales.Sum(s => s.Quantity * s.UnitPrice),
 
-                Sales = product.Sales.Select(s => new SaleDto
+                Sales = product.Sales.Select(s => new SaleDetailDto
                 {
                     Id = s.Id,
                     SaleDate = s.SaleDate,
@@ -100,8 +100,8 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
             return Ok(dto);
         }
 
-        // GET: api/Products/{id}
-        [HttpGet("{id}")]
+        // PUT: api/Products/{id}
+        [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] ProductUpdateDto dto)
         {
             var product = await _productRepository.GetByIdAsync(id);

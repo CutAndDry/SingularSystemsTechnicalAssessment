@@ -22,7 +22,7 @@
         public int TotalSales { get; set; }
         public decimal TotalRevenue { get; set; }
 
-        public List<SaleDto> Sales { get; set; } = new();
+        public List<SaleDetailDto> Sales { get; set; } = new();
     }
 
     public class ProductCreateDto
@@ -39,7 +39,7 @@
     }
 
 
-    public class PagedResult<T>
+    public class ProductPagedResult<T>
     {
         public List<T> Items { get; set; } = new();
         public int PageNumber { get; set; }

@@ -1,13 +1,54 @@
 ﻿namespace SingularSystemsTechnicalAssessment.Server.src.Application_Layer.DTO_s
 {
-    public class SaleDto
+  
+
+    public class SaleListDto
+    {
+        public int Id { get; set; }
+        public string ProductName { get; set; } = null!;
+        public int Quantity { get; set; }
+        public decimal UnitPrice { get; set; }
+        public DateTime SaleDate { get; set; }
+    }
+
+    public class SaleDetailDto
     {
         public int Id { get; set; }
         public int ProductId { get; set; }
         public string ProductName { get; set; } = null!;
-        public DateTime SaleDate { get; set; }
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
-        public decimal Total => Quantity * UnitPrice;
+        public DateTime SaleDate { get; set; }
     }
+
+
+    public class SaleCreateDto
+    {
+        public int ProductId { get; set; }
+        public int Quantity { get; set; }
+        public decimal? UnitPrice { get; set; }
+    }
+
+    public class SaleUpdateDto
+    {
+        public int ProductId { get; set; }
+        public int Quantity { get; set; }
+        public decimal UnitPrice { get; set; }
+        public DateTime SaleDate { get; set; }
+    }
+
+    public class SalesPagedResult<T>
+    {
+        public List<T> Items { get; set; } = new();
+        public int PageNumber { get; set; }
+        public int PageSize { get; set; }
+
+        public int TotalCount { get; set; }
+        public int TotalPages { get; set; }
+
+        public bool HasPreviousPage => PageNumber > 1;
+        public bool HasNextPage => PageNumber < TotalPages;
+    }
+
+
 }
