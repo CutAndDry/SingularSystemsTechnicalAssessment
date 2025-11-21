@@ -5,7 +5,8 @@ namespace SingularSystemsTechnicalAssessment.Server.Application_Layer.Interfaces
 {
         public interface ISaleRepository : IRepository<Sale>
         {
-            Task<IEnumerable<Sale>> GetFilteredAsync(
+        Task<IEnumerable<Sale>> GetAllAsync();
+        Task<IEnumerable<Sale>> GetFilteredAsync(
                 int? productId, DateTime? startDate, DateTime? endDate, int page, int pageSize);
         }
 }

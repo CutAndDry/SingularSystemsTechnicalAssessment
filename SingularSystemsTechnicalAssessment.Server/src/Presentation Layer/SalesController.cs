@@ -40,33 +40,38 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
 
         // GET: api/Sales?pageNumber=1&pageSize=10
         [HttpGet("GetAllPagination")]
-        public async Task<IActionResult> GetAllPagination([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetAllPagination(
+           [FromQuery] int pageNumber = 1,
+           [FromQuery] int pageSize = 10,
+           [FromQuery] int? productId = null,
+           [FromQuery] DateTime? startDate = null,
+           [FromQuery] DateTime? endDate = null)
         {
             if (pageNumber < 1) pageNumber = 1;
             if (pageSize < 1) pageSize = 10;
 
-            // Use GetFilteredAsync with no filters to get all sales with Product included
+            // Get filtered paginated result
             var sales = await _saleRepository.GetFilteredAsync(
-                productId: null,
-                startDate: null,
-                endDate: null,
-                page: pageNumber,
-                pageSize: pageSize
+                productId,
+                startDate,
+                endDate,
+                pageNumber,
+                pageSize
             );
 
-            // You might want total count separately for pagination metadata
+            // Get total count for pagination (but filtered count)
             var totalCount = (await _saleRepository.GetFilteredAsync(
-                productId: null,
-                startDate: null,
-                endDate: null,
-                page: 1,
-                pageSize: int.MaxValue // get all for counting
+                productId,
+                startDate,
+                endDate,
+                1,
+                int.MaxValue
             )).Count();
 
             var items = sales.Select(s => new SaleListDto
             {
                 Id = s.Id,
-                ProductName = s.Product.Name, // safe now, Product is included
+                ProductName = s.Product.Name,
                 Quantity = s.Quantity,
                 UnitPrice = s.UnitPrice,
                 SaleDate = s.SaleDate
@@ -77,8 +82,7 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
                 Items = items,
                 PageNumber = pageNumber,
                 PageSize = pageSize,
-                TotalCount = totalCount,
-                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+                TotalCount = totalCount
             };
 
             return Ok(response);

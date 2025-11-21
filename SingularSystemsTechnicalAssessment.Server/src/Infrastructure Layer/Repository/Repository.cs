@@ -15,9 +15,9 @@ namespace SingularSystemsTechnicalAssessment.Server.Infrastructure_Layer.Reposit
             _dbSet = _context.Set<T>();
         }
 
-        public async Task<T?> GetByIdAsync(int id) => await _dbSet.FindAsync(id);
+        public virtual async Task<T?> GetByIdAsync(int id) => await _dbSet.FindAsync(id);
 
-        public async Task<IEnumerable<T>> GetAllAsync() => await _dbSet.ToListAsync();
+        public virtual async Task<IEnumerable<T>> GetAllAsync() => await _dbSet.ToListAsync();
 
         public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
             => await _dbSet.Where(predicate).ToListAsync();

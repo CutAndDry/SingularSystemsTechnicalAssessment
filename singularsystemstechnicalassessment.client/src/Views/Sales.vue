@@ -2,10 +2,37 @@
   <div class="container mt-4">
     <h2>Sales</h2>
 
+    <!-- FILTERS -->
+    <div class="filters mb-4 p-3 border rounded">
+      <h5>Filters</h5>
+
+      <div class="row">
+        <div class="col-md-3 mb-2">
+          <label>Product ID</label>
+          <input v-model.number="filters.productId" type="number" class="form-control" placeholder="Product ID" />
+        </div>
+
+        <div class="col-md-3 mb-2">
+          <label>Start Date</label>
+          <input v-model="filters.startDate" type="date" class="form-control" />
+        </div>
+
+        <div class="col-md-3 mb-2">
+          <label>End Date</label>
+          <input v-model="filters.endDate" type="date" class="form-control" />
+        </div>
+
+        <div class="col-md-3 d-flex align-items-end mb-2">
+          <button class="btn btn-primary me-2" @click="applyFilters">Apply</button>
+          <button class="btn btn-secondary" @click="resetFilters">Reset</button>
+        </div>
+      </div>
+    </div>
 
     <button class="btn btn-primary mb-3" @click="showModal = true">
       Add New Sale
     </button>
+
 
     <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
       <div class="modal-content">
@@ -35,6 +62,7 @@
       </div>
     </div>
 
+
     <table class="sale-table table-bordered">
       <thead>
         <tr>
@@ -56,7 +84,7 @@
       </tbody>
     </table>
 
-
+    <!-- PAGINATION -->
     <nav class="pagination-container">
       <button class="pagination-btn"
               :disabled="!pageInfo.hasPreviousPage"
@@ -78,11 +106,13 @@
   </div>
 </template>
 
+
 <script>
   import { getSales, addSale } from "../Services/salesService";
 
   export default {
     name: "Sales",
+
     data() {
       return {
         sales: [],
@@ -91,6 +121,12 @@
         pageSize: 10,
 
         showModal: false,
+
+        filters: {
+          productId: null,
+          startDate: null,
+          endDate: null
+        },
 
         newSale: {
           productId: null,
@@ -103,7 +139,14 @@
     methods: {
       async fetchSales() {
         try {
-          const res = await getSales(this.pageNumber, this.pageSize);
+          const res = await getSales(
+            this.pageNumber,
+            this.pageSize,
+            this.filters.productId,
+            this.filters.startDate,
+            this.filters.endDate
+          );
+
           this.sales = res.data.items;
           this.pageInfo = res.data;
         } catch (err) {
@@ -111,10 +154,25 @@
         }
       },
 
+      applyFilters() {
+        this.pageNumber = 1;
+        this.fetchSales();
+      },
+
+      resetFilters() {
+        this.filters = {
+          productId: null,
+          startDate: null,
+          endDate: null
+        };
+
+        this.pageNumber = 1;
+        this.fetchSales();
+      },
+
       async submitSale() {
         try {
           await addSale(this.newSale);
-
           this.newSale = { productId: null, quantity: 1, unitPrice: null };
           this.showModal = false;
           this.fetchSales();
@@ -148,22 +206,14 @@
   };
 </script>
 
+
 <style scoped>
   .container {
     max-width: 900px;
   }
 
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
+  .filters {
+    background: #f8f9fa;
   }
 
   .sale-table {
@@ -178,6 +228,18 @@
       border: 1px solid #ddd;
     }
 
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
 
   .modal-content {
     background: white;
@@ -192,6 +254,7 @@
     display: flex;
     justify-content: space-between;
   }
+
   .pagination-container {
     display: flex;
     justify-content: center;
@@ -224,5 +287,4 @@
     font-weight: 600;
     font-size: 14px;
   }
-
 </style>
