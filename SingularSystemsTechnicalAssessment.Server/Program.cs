@@ -3,6 +3,7 @@ using SingularSystemsTechnicalAssessment.Server.Application_Layer.Interfaces.Rep
 using SingularSystemsTechnicalAssessment.Server.Infrastructure_Layer;
 using SingularSystemsTechnicalAssessment.Server.Infrastructure_Layer.Repository;
 using SingularSystemsTechnicalAssessment.Server.src.Infrastructure_Layer;
+using SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer;
 using System;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,6 +39,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+app.UseMiddleware<ErrorHandlingMiddleware>();
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
