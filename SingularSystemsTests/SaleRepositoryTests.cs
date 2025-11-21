@@ -21,7 +21,7 @@ namespace SingularSystemsTests
             return new AssessmentDbContext(options);
         }
 
-        // check if Get Filterd retruns a filterd result 
+        // check if GetFilterd retruns a filterd result 
         [Fact]
         public async Task GetFilteredAsync_ReturnsFilteredSales()
         {

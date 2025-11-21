@@ -38,6 +38,7 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
             return Ok(result);
         }
 
+        // filtered paginated result
         // GET: api/Sales?pageNumber=1&pageSize=10
         [HttpGet("GetAllPagination")]
         public async Task<IActionResult> GetAllPagination(
@@ -50,7 +51,6 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
             if (pageNumber < 1) pageNumber = 1;
             if (pageSize < 1) pageSize = 10;
 
-            // Get filtered paginated result
             var sales = await _saleRepository.GetFilteredAsync(
                 productId,
                 startDate,
@@ -59,7 +59,6 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
                 pageSize
             );
 
-            // Get total count for pagination (but filtered count)
             var totalCount = (await _saleRepository.GetFilteredAsync(
                 productId,
                 startDate,

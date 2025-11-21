@@ -14,7 +14,7 @@ namespace SingularSystemsTests
 {
     public class SalesControllerTests
     {
-        //check if SalesController correctly handles the case when a sale with the given ID does not exist:
+        //check if SalesController correctly handles sale does not exist with ID :
         [Fact]
         public async Task GetById_ReturnsNotFound_ForInvalidId()
         {
