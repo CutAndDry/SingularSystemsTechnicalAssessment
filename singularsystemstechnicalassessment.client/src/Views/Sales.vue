@@ -70,6 +70,7 @@
           <th>Product Name</th>
           <th>Quantity</th>
           <th>Unit Price</th>
+          <th>Total</th>
           <th>Sale Date</th>
         </tr>
       </thead>
@@ -79,6 +80,7 @@
           <td>{{ sale.productName }}</td>
           <td>{{ sale.quantity }}</td>
           <td>{{ sale.unitPrice.toFixed(2) }}</td>
+          <td>{{ (sale.quantity * sale.unitPrice).toFixed(2) }}</td>
           <td>{{ new Date(sale.saleDate).toLocaleString() }}</td>
         </tr>
       </tbody>
@@ -214,6 +216,7 @@
 
   .filters {
     background: #f8f9fa;
+    padding:20px;
   }
 
   .sale-table {
