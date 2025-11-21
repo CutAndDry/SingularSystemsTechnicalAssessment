@@ -4,16 +4,17 @@ using SingularSystemsTechnicalAssessment.Server.Domain_Layer.Entities;
 using SingularSystemsTechnicalAssessment.Server.Infrastructure_Layer.Repository;
 using SingularSystemsTechnicalAssessment.Server.src.Application_Layer.DTO_s;
 
+
 namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
 {
     [ApiController]
     [Route("api/[controller]")]
     public class SalesController : ControllerBase
     {
-        private readonly IRepository<Sale> _saleRepository;
+        private readonly ISaleRepository _saleRepository;
         private readonly IRepository<Product> _productRepository;
 
-        public SalesController(IRepository<Sale> saleRepository, IRepository<Product> productRepository)
+        public SalesController(ISaleRepository saleRepository, IRepository<Product> productRepository)
         {
             _saleRepository = saleRepository;
             _productRepository = productRepository;
@@ -44,22 +45,32 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
             if (pageNumber < 1) pageNumber = 1;
             if (pageSize < 1) pageSize = 10;
 
-            var sales = await _saleRepository.GetAllAsync();
+            // Use GetFilteredAsync with no filters to get all sales with Product included
+            var sales = await _saleRepository.GetFilteredAsync(
+                productId: null,
+                startDate: null,
+                endDate: null,
+                page: pageNumber,
+                pageSize: pageSize
+            );
 
-            var totalCount = sales.Count();
+            // You might want total count separately for pagination metadata
+            var totalCount = (await _saleRepository.GetFilteredAsync(
+                productId: null,
+                startDate: null,
+                endDate: null,
+                page: 1,
+                pageSize: int.MaxValue // get all for counting
+            )).Count();
 
-            var items = sales
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .Select(s => new SaleListDto
-                {
-                    Id = s.Id,
-                    ProductName = s.Product.Name,
-                    Quantity = s.Quantity,
-                    UnitPrice = s.UnitPrice,
-                    SaleDate = s.SaleDate
-                })
-                .ToList();
+            var items = sales.Select(s => new SaleListDto
+            {
+                Id = s.Id,
+                ProductName = s.Product.Name, // safe now, Product is included
+                Quantity = s.Quantity,
+                UnitPrice = s.UnitPrice,
+                SaleDate = s.SaleDate
+            }).ToList();
 
             var response = new SalesPagedResult<SaleListDto>
             {
@@ -72,6 +83,7 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
 
             return Ok(response);
         }
+
 
         // GET: api/Sales/{id}
         [HttpGet("{id}")]

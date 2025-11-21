@@ -32,5 +32,7 @@ namespace SingularSystemsTechnicalAssessment.Server.Infrastructure_Layer.Reposit
                 .Include(s => s.Product)
                 .ToListAsync();
         }
+
+
     }
 }
