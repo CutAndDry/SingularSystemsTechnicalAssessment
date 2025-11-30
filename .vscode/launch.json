@@ -1,0 +1,55 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch Backend (dotnet)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build backend",
+      "program": "${workspaceFolder}/SingularSystemsTechnicalAssessment.Server/bin/Debug/net8.0/SingularSystemsTechnicalAssessment.Server.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/SingularSystemsTechnicalAssessment.Server",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5075"    // changed to alternate port to avoid collision
+      },
+      "console": "internalConsole"
+    },
+    {
+      "name": "Launch Frontend (npm run dev)",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "${workspaceFolder}/singularsystemstechnicalassessment.client",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Open Swagger (Chrome)",
+      "type": "pwa-chrome",
+      "request": "launch",
+      "url": "http://localhost:5075/swagger",        // changed to http:// to match backend protocol
+      "webRoot": "${workspaceFolder}"
+    },
+
+    {
+      "name": "Open Frontend (Browser)",
+      "type": "pwa-chrome",
+      "request": "launch",
+      "url": "https://localhost:5173/",
+      "webRoot": "${workspaceFolder}/singularsystemstechnicalassessment.client"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Launch Full Stack (Backend + Frontend + Swagger)",
+      "configurations": [
+        "Launch Backend (dotnet)",
+        "Launch Frontend (npm run dev)",
+        "Open Swagger (Chrome)",
+        "Open Frontend (Browser)"              // added here so compound opens frontend URL too
+      ]
+    }
+  ]
+}

@@ -5,6 +5,17 @@
   margin: 0 auto;
   padding: 2rem;
   font-weight: normal;
+  /* ensure content area accounts for sidebar */
+  margin-left: var(--sidebar-width, 220px);
+  transition: margin-left 0.2s ease;
+}
+
+/* collapse behavior for small screens */
+@media (max-width: 900px) {
+  #app {
+    margin-left: 64px; /* match collapsed sidebar width */
+    padding: 1rem;
+  }
 }
 
 a,
