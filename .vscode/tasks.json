@@ -24,7 +24,7 @@
       "command": "npm",
       "args": ["install"],
       "options": {
-        "cwd": "${workspaceFolder}/singularsystemstechnicalassessment.client"
+        "cwd": "${workspaceFolder}/SingularSystemsTechnicalAssessment.Client"
       },
       "presentation": {
         "reveal": "silent"

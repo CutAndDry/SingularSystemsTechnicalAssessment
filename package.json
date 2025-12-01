@@ -1,0 +1,14 @@
+{
+  "name": "SingularSystemsTechnicalAssessment",
+  "version": "1.0.0",
+  "description": "Technical Assessment App - Vue.js and ASP.NET Core",
+  "scripts": {
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "dotnet test SingularSystemsTechnicalAssessment.Server/tests/SingularSystemsTests/SingularSystemsTests.csproj",
+    "test:frontend": "cd SingularSystemsTechnicalAssessment.Client && npm run test",
+    "dev:backend": "cd SingularSystemsTechnicalAssessment.Server && dotnet run",
+    "dev:frontend": "cd SingularSystemsTechnicalAssessment.Client && npm run dev",
+    "build:backend": "cd SingularSystemsTechnicalAssessment.Server && dotnet build",
+    "build:frontend": "cd SingularSystemsTechnicalAssessment.Client && npm run build"
+  }
+}

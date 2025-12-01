@@ -18,11 +18,11 @@
     },
     {
       "name": "Launch Frontend (npm run dev)",
-      "type": "pwa-node",
+      "type": "node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
-      "cwd": "${workspaceFolder}/singularsystemstechnicalassessment.client",
+      "cwd": "${workspaceFolder}/SingularSystemsTechnicalAssessment.Client",
       "console": "integratedTerminal",
       "env": {
         "BROWSER": "none"
@@ -35,7 +35,7 @@
     },
     {
       "name": "Open Swagger (Chrome)",
-      "type": "pwa-chrome",
+      "type": "chrome",
       "request": "launch",
       "url": "http://localhost:5075/swagger",        // changed to http:// to match backend protocol
       "webRoot": "${workspaceFolder}"
@@ -43,10 +43,10 @@
 
     {
       "name": "Open Frontend (Browser)",
-      "type": "pwa-chrome",
+      "type": "chrome",
       "request": "launch",
       "url": "https://localhost:5173/",
-      "webRoot": "${workspaceFolder}/singularsystemstechnicalassessment.client"
+      "webRoot": "${workspaceFolder}/SingularSystemsTechnicalAssessment.Client"
     }
   ],
   "compounds": [

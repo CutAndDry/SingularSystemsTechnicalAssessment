@@ -44,7 +44,17 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Infrastructure_Layer
             _logger.LogInformation("Starting external seed process...");
 
             var products = await FetchProductsWithRetryAsync();
-            var sales = await FetchSalesWithRetryAsync();
+            var sales = new List<Sale>();
+
+            // Fetch sales for each product
+            if (products.Any())
+            {
+                foreach (var product in products)
+                {
+                    var productSales = await FetchSalesForProductWithRetryAsync(product.Id);
+                    sales.AddRange(productSales);
+                }
+            }
 
             // Only add if not already present to avoid duplicates on restart.
             if (products.Any() && !_db.Products.Any())
@@ -139,6 +149,92 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Infrastructure_Layer
             {
                 _logger.LogWarning("Not in Development environment; skipping local fallback for products and returning empty list.");
                 return new List<Product>();
+            }
+        }
+
+        private async Task<List<Sale>> FetchSalesForProductWithRetryAsync(int productId, int maxAttempts = 3)
+        {
+            int attempt = 0;
+            Exception? lastEx = null;
+
+            while (attempt < maxAttempts)
+            {
+                attempt++;
+                try
+                {
+                    var url = $"{SalesEndpoint}?Id={productId}";
+                    var resp = await _http.GetAsync(url);
+                    if (!resp.IsSuccessStatusCode)
+                    {
+                        _logger.LogWarning("Sales endpoint returned {Status} for product {ProductId}. Attempt {Attempt}", resp.StatusCode, productId, attempt);
+                        lastEx = new Exception($"Status {resp.StatusCode}");
+                    }
+                    else
+                    {
+                        var json = await resp.Content.ReadAsStringAsync();
+                        var ext = JsonSerializer.Deserialize<List<ExternalSale>>(json, _jsonOptions) ?? new List<ExternalSale>();
+
+                        var list = new List<Sale>();
+                        foreach (var s in ext)
+                        {
+                            DateTime parsed = DateTime.UtcNow;
+                            if (!string.IsNullOrWhiteSpace(s.saleDate))
+                            {
+                                DateTime.TryParse(s.saleDate, null, System.Globalization.DateTimeStyles.RoundtripKind, out parsed);
+                            }
+
+                            var sale = new Sale
+                            {
+                                Id = s.saleId,
+                                ProductId = s.productId,
+                                SaleQty = s.saleQty,
+                                SalePrice = Convert.ToDecimal(s.salePrice),
+                                SaleDate = parsed
+                            };
+                            list.Add(sale);
+                        }
+
+                        return list;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    lastEx = ex;
+                    _logger.LogWarning(ex, "Error fetching sales for product {ProductId} attempt {Attempt}", productId, attempt);
+                }
+
+                await Task.Delay(500 * attempt);
+            }
+
+            _logger.LogWarning(lastEx, "Failed to fetch sales for product {ProductId} after {Attempts} attempts", productId, maxAttempts);
+
+            if (_env.IsDevelopment())
+            {
+                _logger.LogInformation("Environment is Development; attempting local fallback for sales.");
+                try
+                {
+                    var local = LoadSalesFromLocalFile();
+                    if (local != null && local.Any())
+                    {
+                        _logger.LogInformation("Loaded {Count} sales from local fallback file.", local.Count);
+                        return local;
+                    }
+                    else
+                    {
+                        _logger.LogWarning("No local fallback sales found. Returning empty list.");
+                        return new List<Sale>();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error loading local fallback sales; returning empty list.");
+                    return new List<Sale>();
+                }
+            }
+            else
+            {
+                _logger.LogWarning("Not in Development environment; skipping local fallback for sales and returning empty list.");
+                return new List<Sale>();
             }
         }
 

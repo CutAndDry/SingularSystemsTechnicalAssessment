@@ -54,21 +54,14 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
             if (pageNumber < 1) pageNumber = 1;
             if (pageSize < 1) pageSize = 10;
 
-            var sales = await _saleRepository.GetFilteredAsync(
+            // Single optimized query with count - no double query
+            var (sales, totalCount) = await _saleRepository.GetFilteredWithCountAsync(
                 productId,
                 startDate,
                 endDate,
                 pageNumber,
                 pageSize
             );
-
-            var totalCount = (await _saleRepository.GetFilteredAsync(
-                productId,
-                startDate,
-                endDate,
-                1,
-                int.MaxValue
-            )).Count();
 
             var items = sales.Select(s => new SaleListDto
             {

@@ -1,4 +1,6 @@
-﻿namespace SingularSystemsTechnicalAssessment.Server.src.Application_Layer.DTO_s
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace SingularSystemsTechnicalAssessment.Server.src.Application_Layer.DTO_s
 {
   
 
@@ -24,16 +26,33 @@
 
     public class SaleCreateDto
     {
+        [Required(ErrorMessage = "Product ID is required")]
+        [Range(1, int.MaxValue, ErrorMessage = "Product ID must be a valid positive integer")]
         public int ProductId { get; set; }
+
+        [Required(ErrorMessage = "Sale quantity is required")]
+        [Range(1, 100000, ErrorMessage = "Sale quantity must be between 1 and 100000")]
         public int SaleQty { get; set; }
+
+        [Range(0.01, 999999.99, ErrorMessage = "Sale price must be between 0.01 and 999999.99")]
         public decimal? SalePrice { get; set; }
     }
 
     public class SaleUpdateDto
     {
+        [Required(ErrorMessage = "Product ID is required")]
+        [Range(1, int.MaxValue, ErrorMessage = "Product ID must be a valid positive integer")]
         public int ProductId { get; set; }
+
+        [Required(ErrorMessage = "Sale quantity is required")]
+        [Range(1, 100000, ErrorMessage = "Sale quantity must be between 1 and 100000")]
         public int SaleQty { get; set; }
+
+        [Required(ErrorMessage = "Sale price is required")]
+        [Range(0.01, 999999.99, ErrorMessage = "Sale price must be between 0.01 and 999999.99")]
         public decimal SalePrice { get; set; }
+
+        [Required(ErrorMessage = "Sale date is required")]
         public DateTime SaleDate { get; set; }
     }
 

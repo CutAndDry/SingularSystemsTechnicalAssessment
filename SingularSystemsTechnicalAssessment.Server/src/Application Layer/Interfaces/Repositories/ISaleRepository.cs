@@ -7,6 +7,8 @@ namespace SingularSystemsTechnicalAssessment.Server.Application_Layer.Interfaces
         {
         Task<IEnumerable<Sale>> GetFilteredAsync(
                 int? productId, DateTime? startDate, DateTime? endDate, int page, int pageSize);
+        Task<(IEnumerable<Sale> items, int totalCount)> GetFilteredWithCountAsync(
+                int? productId, DateTime? startDate, DateTime? endDate, int page, int pageSize);
         Task<Sale?> GetByIdAsync(int id);
         Task AddAsync(Sale sale);
         Task SaveChangesAsync();
