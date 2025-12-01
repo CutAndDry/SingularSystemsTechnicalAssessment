@@ -27,8 +27,10 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
                 Id = p.Id,
                 Name = p.Name,
                 Price = p.Price,
-                TotalSales = p.Sales.Sum(s => s.Quantity),
-                TotalRevenue = p.Sales.Sum(s => s.Quantity * s.UnitPrice)
+                Category = p.Category,
+                Image = p.Image,
+                TotalSales = p.Sales.Sum(s => s.SaleQty),
+                TotalRevenue = p.Sales.Sum(s => s.SaleQty * s.SalePrice)
             });
 
             return Ok(result);
@@ -52,8 +54,10 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
                     Id = p.Id,
                     Name = p.Name,
                     Price = p.Price,
-                    TotalSales = p.Sales.Sum(s => s.Quantity),
-                    TotalRevenue = p.Sales.Sum(s => s.Quantity * s.UnitPrice)
+                    Category = p.Category,
+                    Image = p.Image,
+                    TotalSales = p.Sales.Sum(s => s.SaleQty),
+                    TotalRevenue = p.Sales.Sum(s => s.SaleQty * s.SalePrice)
                 })
                 .ToList();
 
@@ -84,15 +88,17 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
                 Name = product.Name,
                 Description = product.Description,
                 Price = product.Price,
-                TotalSales = product.Sales.Sum(s => s.Quantity),
-                TotalRevenue = product.Sales.Sum(s => s.Quantity * s.UnitPrice),
+                Category = product.Category,
+                Image = product.Image,
+                TotalSales = product.Sales.Sum(s => s.SaleQty),
+                TotalRevenue = product.Sales.Sum(s => s.SaleQty * s.SalePrice),
 
                 Sales = product.Sales.Select(s => new SaleDetailDto
                 {
                     Id = s.Id,
                     SaleDate = s.SaleDate,
-                    Quantity = s.Quantity,
-                    UnitPrice = s.UnitPrice,
+                    Quantity = s.SaleQty,
+                    UnitPrice = s.SalePrice,
                     ProductId = s.ProductId
                 }).ToList()
             };
@@ -110,6 +116,8 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
             product.Name = dto.Name;
             product.Description = dto.Description;
             product.Price = dto.Price;
+            product.Category = dto.Category;
+            product.Image = dto.Image;
 
             _productRepository.Update(product);
             await _productRepository.SaveChangesAsync();
@@ -125,7 +133,9 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
             {
                 Name = dto.Name,
                 Description = dto.Description,
-                Price = dto.Price
+                Price = dto.Price,
+                Category = dto.Category,
+                Image = dto.Image
             };
 
             await _productRepository.AddAsync(product);

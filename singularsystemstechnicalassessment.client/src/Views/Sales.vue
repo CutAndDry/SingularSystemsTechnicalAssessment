@@ -560,3 +560,14 @@ export default {
   }
 }
 </style>
+
+<style scoped>
+@media (max-width: 900px) {
+  .sales-page {
+    margin-left: 0 !important;
+    padding-top: calc(var(--mobile-topbar-height, 56px) + 1rem);
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+</style>

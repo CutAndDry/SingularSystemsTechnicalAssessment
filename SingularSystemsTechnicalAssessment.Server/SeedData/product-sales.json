@@ -1,0 +1,17 @@
+[
+  {
+    "saleId": 1,
+    "productId": 1,
+    "salePrice": 15.33,
+    "saleQty": 2,
+    "saleDate": "2023-01-01T12:00:00Z"
+  },
+  {
+    "saleId": 2,
+    "productId": 2,
+    "salePrice": 11.57,
+    "saleQty": 1,
+    "saleDate": "2023-01-05T12:00:00Z"
+  }
+]
+

@@ -30,8 +30,8 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
             {
                 Id = s.Id,
                 ProductName = s.Product.Name,
-                Quantity = s.Quantity,
-                UnitPrice = s.UnitPrice,
+                SaleQty = s.SaleQty,
+                SalePrice = s.SalePrice,
                 SaleDate = s.SaleDate
             });
 
@@ -71,8 +71,8 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
             {
                 Id = s.Id,
                 ProductName = s.Product.Name,
-                Quantity = s.Quantity,
-                UnitPrice = s.UnitPrice,
+                SaleQty = s.SaleQty,
+                SalePrice = s.SalePrice,
                 SaleDate = s.SaleDate
             }).ToList();
 
@@ -100,8 +100,8 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
                 Id = sale.Id,
                 ProductId = sale.ProductId,
                 ProductName = sale.Product.Name,
-                Quantity = sale.Quantity,
-                UnitPrice = sale.UnitPrice,
+                Quantity = sale.SaleQty,
+                UnitPrice = sale.SalePrice,
                 SaleDate = sale.SaleDate
             };
 
@@ -118,8 +118,8 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
             var sale = new Sale
             {
                 ProductId = dto.ProductId,
-                Quantity = dto.Quantity,
-                UnitPrice = dto.UnitPrice ?? product.Price,
+                SaleQty = dto.SaleQty,
+                SalePrice = dto.SalePrice ?? product.Price,
                 SaleDate = DateTime.UtcNow
             };
 
@@ -140,8 +140,8 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
             if (product == null) return BadRequest("Invalid ProductId.");
 
             sale.ProductId = dto.ProductId;
-            sale.Quantity = dto.Quantity;
-            sale.UnitPrice = dto.UnitPrice;
+            sale.SaleQty = dto.SaleQty;
+            sale.SalePrice = dto.SalePrice;
             sale.SaleDate = dto.SaleDate;
 
             _saleRepository.Update(sale);

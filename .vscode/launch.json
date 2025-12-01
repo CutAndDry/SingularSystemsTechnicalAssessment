@@ -23,7 +23,15 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "cwd": "${workspaceFolder}/singularsystemstechnicalassessment.client",
-      "console": "integratedTerminal"
+      "console": "integratedTerminal",
+      "env": {
+        "BROWSER": "none"
+      },
+      "serverReadyAction": {
+        "pattern": "Local:\\s*(https?://localhost:5173)",
+        "uriFormat": "%s",
+        "action": "openExternally"
+      }
     },
     {
       "name": "Open Swagger (Chrome)",
@@ -44,11 +52,10 @@
   "compounds": [
     {
       "name": "Launch Full Stack (Backend + Frontend + Swagger)",
-      "configurations": [
+        "configurations": [
         "Launch Backend (dotnet)",
         "Launch Frontend (npm run dev)",
-        "Open Swagger (Chrome)",
-        "Open Frontend (Browser)"              // added here so compound opens frontend URL too
+        "Open Swagger (Chrome)"
       ]
     }
   ]

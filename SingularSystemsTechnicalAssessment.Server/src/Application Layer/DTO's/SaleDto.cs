@@ -6,8 +6,8 @@
     {
         public int Id { get; set; }
         public string ProductName { get; set; } = null!;
-        public int Quantity { get; set; }
-        public decimal UnitPrice { get; set; }
+        public int SaleQty { get; set; }
+        public decimal SalePrice { get; set; }
         public DateTime SaleDate { get; set; }
     }
 
@@ -25,15 +25,15 @@
     public class SaleCreateDto
     {
         public int ProductId { get; set; }
-        public int Quantity { get; set; }
-        public decimal? UnitPrice { get; set; }
+        public int SaleQty { get; set; }
+        public decimal? SalePrice { get; set; }
     }
 
     public class SaleUpdateDto
     {
         public int ProductId { get; set; }
-        public int Quantity { get; set; }
-        public decimal UnitPrice { get; set; }
+        public int SaleQty { get; set; }
+        public decimal SalePrice { get; set; }
         public DateTime SaleDate { get; set; }
     }
 
