@@ -4,10 +4,7 @@ using SingularSystemsTechnicalAssessment.Server.Application_Layer.Interfaces.Rep
 using SingularSystemsTechnicalAssessment.Server.Domain_Layer.Entities;
 using SingularSystemsTechnicalAssessment.Server.src.Application_Layer.DTO_s;
 using SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using SingularSystemsTechnicalAssessment.Server.Infrastructure_Layer.Repository;
 
 namespace SingularSystemsTests
 {
@@ -30,14 +27,14 @@ namespace SingularSystemsTests
         [Fact]
         public async Task GetById_ReturnsOkWithSale_WhenSaleExists()
         {
-            var sale = new Sale 
-            { 
-                Id = 1, 
-                ProductId = 1, 
-                Quantity = 5, 
-                UnitPrice = 10, 
+            var sale = new Sale
+            {
+                Id = 1,
+                ProductId = 1,
+                SaleQty = 5,
+                SalePrice = 10,
                 SaleDate = DateTime.UtcNow,
-                Product = new Product { Id = 1, Name = "Product A", Price = 10 }
+                Product = new Product { Id = 1, Description = "Product A", SalePrice = 10 }
             };
             var saleRepo = new Mock<ISaleRepository>();
             var productRepo = new Mock<IRepository<Product>>();
@@ -54,11 +51,11 @@ namespace SingularSystemsTests
         [Fact]
         public async Task GetAll_ReturnsAllSales()
         {
-            var product = new Product { Id = 1, Name = "Product A", Price = 10 };
+            var product = new Product { Id = 1, Description = "Product A", SalePrice = 10 };
             var sales = new List<Sale>
             {
-                new Sale { Id = 1, ProductId = 1, Quantity = 5, UnitPrice = 10, SaleDate = DateTime.UtcNow, Product = product },
-                new Sale { Id = 2, ProductId = 1, Quantity = 3, UnitPrice = 10, SaleDate = DateTime.UtcNow, Product = product }
+                new Sale { Id = 1, ProductId = 1, SaleQty = 5, SalePrice = 10, SaleDate = DateTime.UtcNow, Product = product },
+                new Sale { Id = 2, ProductId = 1, SaleQty = 3, SalePrice = 10, SaleDate = DateTime.UtcNow, Product = product }
             };
             var saleRepo = new Mock<ISaleRepository>();
             var productRepo = new Mock<IRepository<Product>>();
@@ -75,7 +72,7 @@ namespace SingularSystemsTests
         [Fact]
         public async Task Create_ReturnsCreatedAtAction_WithValidData()
         {
-            var product = new Product { Id = 1, Name = "Product A", Price = 10 };
+            var product = new Product { Id = 1, Description = "Product A", SalePrice = 10 };
             var saleRepo = new Mock<ISaleRepository>();
             var productRepo = new Mock<IRepository<Product>>();
             productRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(product);
@@ -83,7 +80,7 @@ namespace SingularSystemsTests
             saleRepo.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
 
             var controller = new SalesController(saleRepo.Object, productRepo.Object);
-            var dto = new SaleCreateDto { ProductId = 1, Quantity = 5, UnitPrice = null };
+            var dto = new SaleCreateDto { ProductId = 1, SaleQty = 5, SalePrice = null };
 
             var result = await controller.Create(dto);
 
@@ -99,7 +96,7 @@ namespace SingularSystemsTests
             productRepo.Setup(r => r.GetByIdAsync(It.IsAny<int>())).ReturnsAsync((Product)null);
 
             var controller = new SalesController(saleRepo.Object, productRepo.Object);
-            var dto = new SaleCreateDto { ProductId = 999, Quantity = 5 };
+            var dto = new SaleCreateDto { ProductId = 999, SaleQty = 5 };
 
             var result = await controller.Create(dto);
 
@@ -109,15 +106,15 @@ namespace SingularSystemsTests
         [Fact]
         public async Task Update_ReturnsNoContent_WhenSuccessful()
         {
-            var sale = new Sale 
-            { 
-                Id = 1, 
-                ProductId = 1, 
-                Quantity = 5, 
-                UnitPrice = 10, 
-                SaleDate = DateTime.UtcNow 
+            var sale = new Sale
+            {
+                Id = 1,
+                ProductId = 1,
+                SaleQty = 5,
+                SalePrice = 10,
+                SaleDate = DateTime.UtcNow
             };
-            var product = new Product { Id = 1, Name = "Product A", Price = 10 };
+            var product = new Product { Id = 1, Description = "Product A", SalePrice = 10 };
             var saleRepo = new Mock<ISaleRepository>();
             var productRepo = new Mock<IRepository<Product>>();
             saleRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(sale);
@@ -125,7 +122,7 @@ namespace SingularSystemsTests
             saleRepo.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
 
             var controller = new SalesController(saleRepo.Object, productRepo.Object);
-            var dto = new SaleUpdateDto { ProductId = 1, Quantity = 10, UnitPrice = 15, SaleDate = DateTime.UtcNow };
+            var dto = new SaleUpdateDto { ProductId = 1, SaleQty = 10, SalePrice = 15, SaleDate = DateTime.UtcNow };
 
             var result = await controller.Update(1, dto);
 
@@ -140,7 +137,7 @@ namespace SingularSystemsTests
             saleRepo.Setup(r => r.GetByIdAsync(It.IsAny<int>())).ReturnsAsync((Sale)null);
 
             var controller = new SalesController(saleRepo.Object, productRepo.Object);
-            var dto = new SaleUpdateDto { ProductId = 1, Quantity = 5, UnitPrice = 10, SaleDate = DateTime.UtcNow };
+            var dto = new SaleUpdateDto { ProductId = 1, SaleQty = 5, SalePrice = 10, SaleDate = DateTime.UtcNow };
 
             var result = await controller.Update(999, dto);
 
@@ -150,7 +147,7 @@ namespace SingularSystemsTests
         [Fact]
         public async Task Delete_ReturnsNoContent_WhenSuccessful()
         {
-            var sale = new Sale { Id = 1, ProductId = 1, Quantity = 5, UnitPrice = 10, SaleDate = DateTime.UtcNow };
+            var sale = new Sale { Id = 1, ProductId = 1, SaleQty = 5, SalePrice = 10, SaleDate = DateTime.UtcNow };
             var saleRepo = new Mock<ISaleRepository>();
             var productRepo = new Mock<IRepository<Product>>();
             saleRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(sale);
@@ -180,10 +177,10 @@ namespace SingularSystemsTests
         [Fact]
         public async Task GetAllPagination_ReturnsPaginatedSales()
         {
-            var product = new Product { Id = 1, Name = "Product A", Price = 10 };
+            var product = new Product { Id = 1, Description = "Product A", SalePrice = 10 };
             var sales = new List<Sale>
             {
-                new Sale { Id = 1, ProductId = 1, Quantity = 5, UnitPrice = 10, SaleDate = DateTime.UtcNow, Product = product }
+                new Sale { Id = 1, ProductId = 1, SaleQty = 5, SalePrice = 10, SaleDate = DateTime.UtcNow, Product = product }
             };
             var saleRepo = new Mock<ISaleRepository>();
             var productRepo = new Mock<IRepository<Product>>();

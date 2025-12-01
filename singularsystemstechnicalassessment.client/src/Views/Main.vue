@@ -165,13 +165,19 @@ const fetchAndBuildCharts = async () => {
     const productsRes = await getAllProducts(1, 100);
     const salesRes = await getSales(1, 100, null, null, null);
 
-    const products = productsRes.data.items || [];
-    const sales = salesRes.data.items || [];
+    const productsData = productsRes.data || {};
+    const salesData = salesRes.data || {};
+
+    // handle both camelCase and PascalCase from API
+    const products = productsData.items || productsData.Items || productsData || [];
+    const sales = salesData.items || salesData.Items || salesData || [];
 
     // --- BAR CHART ---
-    const productNames = products.map(p => p.name);
+    const productNames = products.map(p => p.description || '');
     const salesQuantities = products.map(prod => {
-      return sales.filter(s => s.productName === prod.name).reduce((sum, s) => sum + (s.saleQty || 0), 0);
+      return sales
+        .filter(s => (s.productName || '') === (prod.description || ''))
+        .reduce((sum, s) => sum + (s.saleQty || 0), 0);
     });
 
     barChartData.value = {
@@ -202,7 +208,12 @@ const fetchAndBuildCharts = async () => {
       const d = new Date(now);
       d.setDate(now.getDate() - (days - 1 - i));
       const dateKey = d.toISOString().slice(0, 10);
-      return sales.filter(s => new Date(s.saleDate).toISOString().slice(0, 10) === dateKey).reduce((sum, s) => sum + (s.saleQty || 0), 0);
+      return sales
+        .filter(s => {
+          const sd = new Date(s.saleDate ?? s.SaleDate ?? '');
+          return !isNaN(sd.getTime()) && sd.toISOString().slice(0, 10) === dateKey;
+        })
+        .reduce((sum, s) => sum + (s.saleQty ?? s.SaleQty ?? 0), 0);
     });
 
     lineChartData.value = {
@@ -226,7 +237,7 @@ const fetchAndBuildCharts = async () => {
 
     // --- PIE CHART ---
     const revenueByProduct = products.map(prod => {
-      const productSales = sales.filter(s => s.productName === prod.name);
+      const productSales = sales.filter(s => (s.productName || '') === (prod.description || ''));
       return productSales.reduce((sum, s) => sum + ((s.saleQty || 0) * (s.salePrice || 0)), 0);
     });
 
@@ -234,7 +245,7 @@ const fetchAndBuildCharts = async () => {
     const nonZeroRevenue = revenueByProduct.filter(r => r > 0);
 
     pieChartData.value = {
-      labels: nonZeroProducts.map(p => p.name),
+      labels: nonZeroProducts.map(p => p.description || ''),
       datasets: [
         {
           data: nonZeroRevenue,

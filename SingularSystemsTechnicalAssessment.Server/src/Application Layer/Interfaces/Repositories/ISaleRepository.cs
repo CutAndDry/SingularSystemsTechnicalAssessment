@@ -5,8 +5,12 @@ namespace SingularSystemsTechnicalAssessment.Server.Application_Layer.Interfaces
 {
         public interface ISaleRepository : IRepository<Sale>
         {
-        Task<IEnumerable<Sale>> GetAllAsync();
         Task<IEnumerable<Sale>> GetFilteredAsync(
                 int? productId, DateTime? startDate, DateTime? endDate, int page, int pageSize);
+        Task<Sale?> GetByIdAsync(int id);
+        Task AddAsync(Sale sale);
+        Task SaveChangesAsync();
+        void Update(Sale sale);
+        void Delete(Sale sale);
         }
 }

@@ -3,7 +3,10 @@ using SingularSystemsTechnicalAssessment.Server.Application_Layer.Interfaces.Rep
 using SingularSystemsTechnicalAssessment.Server.Domain_Layer.Entities;
 using SingularSystemsTechnicalAssessment.Server.Infrastructure_Layer.Repository;
 using SingularSystemsTechnicalAssessment.Server.src.Application_Layer.DTO_s;
-
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
 {
@@ -29,7 +32,7 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
             var result = sales.Select(s => new SaleListDto
             {
                 Id = s.Id,
-                ProductName = s.Product.Name,
+                ProductName = s.Product.Description,
                 SaleQty = s.SaleQty,
                 SalePrice = s.SalePrice,
                 SaleDate = s.SaleDate
@@ -70,7 +73,7 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
             var items = sales.Select(s => new SaleListDto
             {
                 Id = s.Id,
-                ProductName = s.Product.Name,
+                ProductName = s.Product.Description,
                 SaleQty = s.SaleQty,
                 SalePrice = s.SalePrice,
                 SaleDate = s.SaleDate
@@ -99,7 +102,7 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
             {
                 Id = sale.Id,
                 ProductId = sale.ProductId,
-                ProductName = sale.Product.Name,
+                ProductName = sale.Product.Description,
                 Quantity = sale.SaleQty,
                 UnitPrice = sale.SalePrice,
                 SaleDate = sale.SaleDate
@@ -119,7 +122,7 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
             {
                 ProductId = dto.ProductId,
                 SaleQty = dto.SaleQty,
-                SalePrice = dto.SalePrice ?? product.Price,
+                SalePrice = dto.SalePrice ?? product.SalePrice,
                 SaleDate = DateTime.UtcNow
             };
 

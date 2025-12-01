@@ -1,37 +1,44 @@
 export interface SaleListDto {
   id: number;
   productName: string;
-  quantity: number;
-  unitPrice: number;
+  saleQty: number;
+  salePrice: number;
   saleDate: string;
 }
 export interface SaleDetailDto {
   id: number;
   productId: number;
   productName: string;
-  quantity: number;
-  unitPrice: number;
-  saleDate: string;
+
+  // Support both variants used across the client / server responses:
+  // - saleQty / salePrice / saleDate (preferred in many places)
+  // - quantity / unitPrice / date (alternate sources)
+  saleQty?: number;
+  quantity?: number;
+
+  salePrice?: number;
+  unitPrice?: number;
+
+  saleDate?: string;
+  date?: string;
 }
 export interface SaleCreateDto {
   productId: number;
-  quantity: number;
-  unitPrice?: number | null;
+  saleQty: number;
+  salePrice?: number | null;
 }
 export interface SaleUpdateDto {
   productId: number;
-  quantity: number;
-  unitPrice: number;
+  saleQty: number;
+  salePrice: number;
   saleDate: string;
 }
 export interface SalesPagedResult<T> {
   items: T[];
   pageNumber: number;
   pageSize: number;
-
   totalCount: number;
   totalPages: number;
-
   hasPreviousPage: boolean;
   hasNextPage: boolean;
 }

@@ -2,6 +2,11 @@
 using SingularSystemsTechnicalAssessment.Server.Application_Layer.Interfaces.Repositories;
 using SingularSystemsTechnicalAssessment.Server.Domain_Layer.Entities;
 using SingularSystemsTechnicalAssessment.Server.src.Application_Layer.DTO_s;
+using Microsoft.AspNetCore.Http;
+using System.IO;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
 {
@@ -25,8 +30,8 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
             var result = products.Select(p => new ProductListDto
             {
                 Id = p.Id,
-                Name = p.Name,
-                Price = p.Price,
+                Description = p.Description,
+                SalePrice = p.SalePrice,
                 Category = p.Category,
                 Image = p.Image,
                 TotalSales = p.Sales.Sum(s => s.SaleQty),
@@ -52,8 +57,8 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
                 .Select(p => new ProductListDto
                 {
                     Id = p.Id,
-                    Name = p.Name,
-                    Price = p.Price,
+                    Description = p.Description,
+                    SalePrice = p.SalePrice,
                     Category = p.Category,
                     Image = p.Image,
                     TotalSales = p.Sales.Sum(s => s.SaleQty),
@@ -73,8 +78,6 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
             return Ok(response);
         }
 
-
-
         // GET: api/Products/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
@@ -85,9 +88,8 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
             var dto = new ProductDetailDto
             {
                 Id = product.Id,
-                Name = product.Name,
                 Description = product.Description,
-                Price = product.Price,
+                SalePrice = product.SalePrice,
                 Category = product.Category,
                 Image = product.Image,
                 TotalSales = product.Sales.Sum(s => s.SaleQty),
@@ -113,9 +115,8 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
             var product = await _productRepository.GetByIdAsync(id);
             if (product == null) return NotFound();
 
-            product.Name = dto.Name;
             product.Description = dto.Description;
-            product.Price = dto.Price;
+            product.SalePrice = dto.SalePrice;
             product.Category = dto.Category;
             product.Image = dto.Image;
 
@@ -125,15 +126,43 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
             return NoContent();
         }
 
-        // POST: api/Products
+        // POST: api/Products (multipart/form-data with file)
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] ProductCreateDto dto)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> Create([FromForm] ProductCreateFormDto dto)
         {
             var product = new Product
             {
-                Name = dto.Name,
                 Description = dto.Description,
-                Price = dto.Price,
+                SalePrice = dto.SalePrice,
+                Category = dto.Category,
+                Image = null
+            };
+
+            if (dto.Image != null && dto.Image.Length > 0)
+            {
+                using var ms = new MemoryStream();
+                await dto.Image.CopyToAsync(ms);
+                var base64 = Convert.ToBase64String(ms.ToArray());
+                var contentType = string.IsNullOrWhiteSpace(dto.Image.ContentType) ? "application/octet-stream" : dto.Image.ContentType;
+                product.Image = $"data:{contentType};base64,{base64}";
+            }
+
+            await _productRepository.AddAsync(product);
+            await _productRepository.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetById), new { id = product.Id }, null);
+        }
+
+        // POST: api/Products/json (application/json)
+        [HttpPost("json")]
+        [Consumes("application/json")]
+        public async Task<IActionResult> CreateJson([FromBody] ProductCreateDto dto)
+        {
+            var product = new Product
+            {
+                Description = dto.Description,
+                SalePrice = dto.SalePrice,
                 Category = dto.Category,
                 Image = dto.Image
             };
@@ -143,8 +172,6 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
 
             return CreatedAtAction(nameof(GetById), new { id = product.Id }, null);
         }
-
-
 
         // DELETE: api/Products/{id}
         [HttpDelete("{id}")]
@@ -158,9 +185,5 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer
 
             return NoContent();
         }
-
-
-
-
     }
 }

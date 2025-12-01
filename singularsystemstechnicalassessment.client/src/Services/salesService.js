@@ -51,3 +51,9 @@ export const addSale = async (sale) => {
   const base = await detectBase();
   return axios.post(base, sale);
 };
+
+export const updateSale = async (id, payload) => {
+  const base = await detectBase();
+  // PUT /api/sales/{id}
+  return axios.put(`${base}/${encodeURIComponent(id)}`, payload);
+};

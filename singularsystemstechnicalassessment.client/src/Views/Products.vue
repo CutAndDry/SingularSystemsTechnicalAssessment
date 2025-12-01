@@ -23,15 +23,18 @@
             placeholder="Filter by name"
           />
         </div>
+        <div class="filter-group">
+          <label>Product Description</label>
+          <input
+            v-model="filters.description"
+            type="text"
+            placeholder="Filter by description"
+          />
+        </div>
         <div class="filter-actions">
+          
           <button
-            class="btn btn-secondary"
-            @click="applyFilters"
-          >
-            Apply Filters
-          </button>
-          <button
-            class="btn btn-outline"
+            class="btn btn-primary"
             @click="resetFilters"
           >
             Reset
@@ -53,36 +56,38 @@
           <h3>Add New Product</h3>
           <button class="modal-close" @click="closeAddModal">&times;</button>
         </div>
-        <form @submit.prevent="submitAddProduct" class="modal-form">
+        <form @submit.prevent="submitAddProduct" class="modal-form" enctype="multipart/form-data">
           <div class="form-group">
-            <label>Product Name *</label>
-            <input
-              v-model="newProduct.name"
-              type="text"
-              required
-              placeholder="Enter product name"
-            />
-          </div>
-          <div class="form-group">
-            <label>Price *</label>
-            <input
-              v-model.number="newProduct.price"
-              type="number"
-              step="0.01"
-              required
-              placeholder="Enter price"
-            />
-          </div>
-          <div class="form-group">
-            <label>Description</label>
+            <label>Description *</label>
             <input
               v-model="newProduct.description"
               type="text"
-              placeholder="Enter description"
+              required
+              placeholder="Enter product description"
             />
           </div>
+          <div class="form-group">
+            <label>Sale Price *</label>
+            <input
+              v-model.number="newProduct.salePrice"
+              type="number"
+              step="0.01"
+              required
+              placeholder="Enter sale price"
+            />
+          </div>
+          <div class="form-group">
+            <label>Product Image</label>
+            <input type="file" accept="image/*" @change="onImageSelected" />
+            <div v-if="newProduct.imagePreview" style="margin-top:8px;">
+              <img :src="newProduct.imagePreview" alt="preview" style="max-width:160px;border-radius:6px;" />
+            </div>
+          </div>
+
           <div class="modal-actions">
-            <button type="submit" class="btn btn-success">Add Product</button>
+            <button type="submit" class="btn btn-success" :disabled="submitting">
+              <span v-if="submitting">Saving…</span><span v-else>Add Product</span>
+            </button>
             <button
               type="button"
               class="btn btn-secondary"
@@ -102,8 +107,8 @@
           <thead>
             <tr>
               <th>ID</th>
-              <th>Name</th>
-              <th>Price</th>
+              <th>Description</th>
+              <th>Sale Price</th>
               <th>Total Sales</th>
               <th>Total Revenue</th>
             </tr>
@@ -118,19 +123,93 @@
               <td colspan="5">&nbsp;</td>
             </tr>
 
-            <tr v-for="product in paginatedProducts" :key="product.id">
+            <!-- clickable rows: open modal on click or keyboard (Enter/Space) -->
+            <tr
+              v-for="product in filteredProducts"
+              :key="product.id"
+              tabindex="0"
+              role="button"
+              @click="openProduct(product)"
+              @keydown.enter.prevent="openProduct(product)"
+              @keydown.space.prevent="openProduct(product)"
+              class="clickable-row"
+            >
               <td>{{ product.id }}</td>
-              <td>{{ product.name }}</td>
-              <td>${{ product.price.toFixed(2) }}</td>
+              <td>{{ product.description }}</td>
+              <td>${{ (product.salePrice ?? 0).toFixed(2) }}</td>
               <td>{{ product.totalSales }}</td>
-              <td>${{ product.totalRevenue.toFixed(2) }}</td>
+              <td>${{ (product.totalRevenue ?? 0).toFixed(2) }}</td>
             </tr>
 
-            <tr v-if="!loading && paginatedProducts.length === 0">
+            <tr v-if="!loading && filteredProducts.length === 0">
               <td colspan="5" class="text-center">No products found.</td>
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- Product details modal (inline so the Edit button can be inside the popup) -->
+    <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Product Details</h3>
+          <button class="modal-close" @click="closeModal">&times;</button>
+        </div>
+
+        <div class="modal-form" style="padding:1rem;">
+          <div style="display:flex;gap:1.5rem;align-items:flex-start;">
+            <div style="flex:1">
+              <p><strong>ID:</strong> {{ selectedProduct?.id ?? '-' }}</p>
+              <p><strong>Description:</strong> {{ selectedProduct?.description ?? '-' }}</p>
+              <p><strong>Sale Price:</strong> ${{ (selectedProduct?.salePrice ?? 0).toFixed(2) }}</p>
+              <p><strong>Category:</strong> {{ selectedProduct?.category ?? '-' }}</p>
+              <p><strong>Total Sales:</strong> {{ selectedProduct?.totalSales ?? 0 }}</p>
+              <p><strong>Total Revenue:</strong> ${{ (selectedProduct?.totalRevenue ?? 0).toFixed(2) }}</p>
+            </div>
+            <div v-if="selectedProduct?.image" style="width:180px;">
+              <img :src="selectedProduct.image" alt="product image" style="max-width:100%;border-radius:6px;" />
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions" style="justify-content:flex-end; padding:1rem;">
+          <button class="btn btn-primary" @click="openEditFromDetails">Edit</button>
+          <button class="btn btn-secondary" @click="closeModal">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Product Modal -->
+    <div v-if="showEditModal" class="modal-overlay" @click.self="closeEditModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Edit Product</h3>
+          <button class="modal-close" @click="closeEditModal">&times;</button>
+        </div>
+        <form @submit.prevent="submitEditProduct" class="modal-form">
+          <div class="form-group">
+            <label>Description *</label>
+            <input v-model="editProduct.description" type="text" required placeholder="Enter product description" />
+          </div>
+          <div class="form-group">
+            <label>Sale Price *</label>
+            <input v-model.number="editProduct.salePrice" type="number" step="0.01" required placeholder="Enter sale price" />
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <input v-model="editProduct.category" type="text" placeholder="Enter category" />
+          </div>
+          <div class="form-group">
+            <label>Image URL (optional)</label>
+            <input v-model="editProduct.image" type="text" placeholder="Set image URL or leave blank" />
+          </div>
+
+          <div class="modal-actions">
+            <button type="submit" class="btn btn-success" :disabled="submitting">Save</button>
+            <button type="button" class="btn btn-secondary" @click="closeEditModal">Cancel</button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -157,26 +236,90 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import { getAllProducts, createProduct } from '../Services/productService.js';
+import { getAllProducts, createProduct, updateProduct } from '../Services/productService.js';
 
 const allProducts = ref([]);
 const pageNumber = ref(1);
 const pageSize = ref(10);
+const totalPages = ref(1); // NEW
 const loading = ref(false);
 const showAddModal = ref(false);
 
 const filters = ref({
   id: null,
-  name: ''
+  name: '',
+  description: ''
 });
 
-const newProduct = ref({ name: '', description: '', price: 0 });
+// newProduct holds file and preview
+const newProduct = ref({ description: '', salePrice: 0, imageFile: null, imagePreview: '' });
+const submitting = ref(false);
+
+// modal state for product details
+const selectedProduct = ref(null);
+const showModal = ref(false);
+
+// Edit modal state
+const showEditModal = ref(false);
+const editProduct = ref({ id: 0, description: '', salePrice: 0, category: '', image: '' });
+
+function openProduct(p){
+  selectedProduct.value = p;
+  showModal.value = true;
+}
+function closeModal(){
+  showModal.value = false;
+  selectedProduct.value = null;
+}
+
+function openEditFromDetails() {
+  if (!selectedProduct.value) return;
+  const p = selectedProduct.value;
+  editProduct.value = {
+    id: p.id,
+    description: p.description ?? '',
+    salePrice: Number(p.salePrice ?? 0),
+    category: p.category ?? '',
+    image: p.image ?? ''
+  };
+  showEditModal.value = true;
+}
+
+async function submitEditProduct() {
+  if (!editProduct.value.id) return;
+  submitting.value = true;
+  try {
+    await updateProduct(editProduct.value.id, {
+      description: editProduct.value.description || '',
+      salePrice: editProduct.value.salePrice ?? 0,
+      category: editProduct.value.category || '',
+      image: editProduct.value.image || null
+    });
+    // Refresh list and close modals
+    await fetchProducts();
+    showEditModal.value = false;
+    showModal.value = false; // close details popup too
+    selectedProduct.value = null;
+  } catch (err) {
+    console.error('Error updating product:', err);
+    alert('Failed to update product: ' + (err?.message || 'unknown'));
+  } finally {
+    submitting.value = false;
+  }
+}
+
+function closeEditModal() {
+  showEditModal.value = false;
+}
 
 const fetchProducts = async () => {
   loading.value = true;
   try {
     const res = await getAllProducts(pageNumber.value, pageSize.value);
-    allProducts.value = res.data.items || [];
+    const data = res.data || {};
+    allProducts.value = data.items || data.Items || [];
+    totalPages.value = data.totalPages ?? data.TotalPages ?? Math.max(1, Math.ceil((data.totalCount ?? allProducts.value.length) / pageSize.value));
+    pageNumber.value = data.pageNumber ?? data.PageNumber ?? pageNumber.value;
   } catch (err) {
     console.error('Error fetching products:', err);
   } finally {
@@ -184,40 +327,66 @@ const fetchProducts = async () => {
   }
 };
 
-// Filter products based on criteria
+// Filter products (current page items)
 const filteredProducts = computed(() => {
   return allProducts.value.filter(product => {
     const matchId = filters.value.id === null || filters.value.id === '' || product.id === filters.value.id;
-    const matchName = !filters.value.name || product.name.toLowerCase().includes(filters.value.name.toLowerCase());
-    return matchId && matchName;
+    const matchDesc = !filters.value.description || (product.description || '').toLowerCase().includes(filters.value.description.toLowerCase());
+    return matchId && matchDesc;
   });
 });
 
-// Paginate filtered products
-const paginatedProducts = computed(() => {
-  const start = (pageNumber.value - 1) * pageSize.value;
-  const end = start + pageSize.value;
-  return filteredProducts.value.slice(start, end);
-});
-
-// Update totalPages based on filtered results
-const computedTotalPages = computed(() => {
-  return Math.max(1, Math.ceil(filteredProducts.value.length / pageSize.value));
-});
+// Use server total pages
+const computedTotalPages = computed(() => totalPages.value);
 
 const submitAddProduct = async () => {
+  if (submitting.value) return;
+  submitting.value = true;
   try {
-    await createProduct(newProduct.value);
-    newProduct.value = { name: '', description: '', price: 0 };
+    const fd = new FormData();
+    fd.append('description', newProduct.value.description || '');
+    fd.append('salePrice', String(newProduct.value.salePrice ?? 0));
+    if (newProduct.value.imageFile) fd.append('image', newProduct.value.imageFile);
+
+    if (newProduct.value.imageFile) {
+      await createProduct(fd);
+    } else {
+      await createProduct({
+        description: newProduct.value.description || '',
+        salePrice: newProduct.value.salePrice ?? 0
+      });
+    }
+
+    // cleanup
+    if (newProduct.value.imagePreview) { try { URL.revokeObjectURL(newProduct.value.imagePreview); } catch {} }
+    newProduct.value = { description: '', salePrice: 0, imageFile: null, imagePreview: '' };
     showAddModal.value = false;
     pageNumber.value = 1;
-    fetchProducts();
+    await fetchProducts();
   } catch (err) {
     console.error('Error adding product:', err);
+    alert('Failed to add product: ' + (err?.message || 'unknown'));
+  } finally {
+    submitting.value = false;
   }
 };
 
+const onImageSelected = (event) => {
+  const file = event.target.files && event.target.files[0];
+  if (!file) {
+    if (newProduct.value.imagePreview) { try { URL.revokeObjectURL(newProduct.value.imagePreview); } catch {} }
+    newProduct.value.imageFile = null;
+    newProduct.value.imagePreview = '';
+    return;
+  }
+  newProduct.value.imageFile = file;
+  if (newProduct.value.imagePreview) { try { URL.revokeObjectURL(newProduct.value.imagePreview); } catch {} }
+  newProduct.value.imagePreview = URL.createObjectURL(file);
+};
+
 const closeAddModal = () => {
+  if (newProduct.value.imagePreview) { try { URL.revokeObjectURL(newProduct.value.imagePreview); } catch {} }
+  newProduct.value = { description: '', salePrice: 0, imageFile: null, imagePreview: '' };
   showAddModal.value = false;
 };
 
@@ -226,19 +395,21 @@ const applyFilters = () => {
 };
 
 const resetFilters = () => {
-  filters.value = { id: null, name: '' };
+  filters.value = { id: null, name: '', description: '' };
   pageNumber.value = 1;
 };
 
 const nextPage = () => {
   if (pageNumber.value < computedTotalPages.value) {
     pageNumber.value++;
+    fetchProducts();
   }
 };
 
 const prevPage = () => {
   if (pageNumber.value > 1) {
     pageNumber.value--;
+    fetchProducts();
   }
 };
 
@@ -553,9 +724,7 @@ onMounted(fetchProducts);
     font-size: 1.5rem;
   }
 }
-</style>
 
-<style scoped>
 @media (max-width: 900px) {
   .products-page {
     margin-left: 0 !important;
@@ -564,4 +733,8 @@ onMounted(fetchProducts);
     padding-right: 1rem;
   }
 }
+</style>
+
+<style scoped>
+.clickable-row{ cursor:pointer; }
 </style>

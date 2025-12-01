@@ -23,12 +23,16 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Changed: compute allowedOrigins once so we can reuse and log it after build
+var allowedOrigins = builder.Configuration["ALLOWED_ORIGINS"]?.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+    ?? new[] { "http://localhost:5173", "https://localhost:5173" };
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("VueCors", policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173", "https://localhost:5173")
+            .WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -80,23 +84,16 @@ else
 }
 builder.Services.AddScoped<SeedDataService>();
 
+// New: register hosted background seeder (runs at startup, uses SeedDataService)
+builder.Services.AddHostedService<SeedDataBackgroundService>();
+
+// New: health checks for readiness/basic liveness
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
-    // Start background seeding so the app will seed on boot. When external fetch fails the seeder will use the local fallback files.
-        var provider = app.Services;
-        _ = Task.Run(async () =>
-        {
-            using var scope = provider.CreateScope();
-            var seedDataService = scope.ServiceProvider.GetRequiredService<SeedDataService>();
-            try
-            {
-                await seedDataService.SeedAsync();
-            }
-            catch (Exception ex)
-            {
-                app.Logger.LogWarning(ex, "Background seeding failed (this should be rare because fallback is available).");
-            }
-        });
+// Log configured CORS origins at startup
+app.Logger.LogInformation("Configured CORS allowed origins: {Origins}", string.Join(", ", allowedOrigins));
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -104,14 +101,27 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+else
+{
+    // production security: HSTS
+    app.UseHsts();
+}
+
+// Ensure redirection to HTTPS early in the pipeline
+app.UseHttpsRedirection();
+
+// New: add a small security headers middleware before static files
+app.UseMiddleware<SecurityHeadersMiddleware>();
 
 app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseCors("VueCors");
-app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 app.MapFallbackToFile("/index.html");
+
+// New: health endpoint
+app.MapHealthChecks("/health");
 
 app.Run();

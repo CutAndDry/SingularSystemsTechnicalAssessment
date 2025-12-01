@@ -6,7 +6,9 @@ using SingularSystemsTechnicalAssessment.Server.src.Application_Layer.DTO_s;
 using SingularSystemsTechnicalAssessment.Server.src.Presentation_Layer;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace SingularSystemsTests
 {
@@ -19,8 +21,8 @@ namespace SingularSystemsTests
             mockRepo.Setup(r => r.GetAllAsync())
                 .ReturnsAsync(new List<Product>
                 {
-                    new Product { Id = 1, Name = "Product A", Price = 10 },
-                    new Product { Id = 2, Name = "Product B", Price = 20 }
+                    new Product { Id = 1, Description = "Product A", SalePrice = 10 },
+                    new Product { Id = 2, Description = "Product B", SalePrice = 20 }
                 });
 
             var controller = new ProductsController(mockRepo.Object);
@@ -46,7 +48,7 @@ namespace SingularSystemsTests
         [Fact]
         public async Task GetById_ReturnsOkWithProduct_WhenProductExists()
         {
-            var product = new Product { Id = 1, Name = "Product A", Price = 10, Sales = new List<Sale>() };
+            var product = new Product { Id = 1, Description = "Product A", SalePrice = 10, Sales = new List<Sale>() };
             var mockRepo = new Mock<IProductRepository>();
             mockRepo.Setup(r => r.GetProductWithSalesAsync(1))
                 .ReturnsAsync(product);
@@ -70,8 +72,8 @@ namespace SingularSystemsTests
                 .Returns(Task.CompletedTask);
 
             var controller = new ProductsController(mockRepo.Object);
-            var dto = new ProductCreateDto { Name = "New Product", Price = 15 };
-            var result = await controller.Create(dto);
+            var dto = new ProductCreateDto { Description = "New Product", SalePrice = 15 };
+            var result = await controller.CreateJson(dto);
 
             Assert.IsType<CreatedAtActionResult>(result);
             mockRepo.Verify(r => r.AddAsync(It.IsAny<Product>()), Times.Once);
@@ -81,7 +83,7 @@ namespace SingularSystemsTests
         [Fact]
         public async Task Update_ReturnsNoContent_WhenSuccessful()
         {
-            var product = new Product { Id = 1, Name = "Original", Price = 10 };
+            var product = new Product { Id = 1, Description = "Original", SalePrice = 10 };
             var mockRepo = new Mock<IProductRepository>();
             mockRepo.Setup(r => r.GetByIdAsync(1))
                 .ReturnsAsync(product);
@@ -89,7 +91,7 @@ namespace SingularSystemsTests
                 .Returns(Task.CompletedTask);
 
             var controller = new ProductsController(mockRepo.Object);
-            var dto = new ProductUpdateDto { Name = "Updated", Price = 20 };
+            var dto = new ProductUpdateDto { Description = "Updated", SalePrice = 20 };
             var result = await controller.Update(1, dto);
 
             Assert.IsType<NoContentResult>(result);
@@ -103,7 +105,7 @@ namespace SingularSystemsTests
                 .ReturnsAsync((Product)null);
 
             var controller = new ProductsController(mockRepo.Object);
-            var dto = new ProductUpdateDto { Name = "Updated", Price = 20 };
+            var dto = new ProductUpdateDto { Description = "Updated", SalePrice = 20 };
             var result = await controller.Update(999, dto);
 
             Assert.IsType<NotFoundResult>(result);
@@ -112,7 +114,7 @@ namespace SingularSystemsTests
         [Fact]
         public async Task Delete_ReturnsNoContent_WhenSuccessful()
         {
-            var product = new Product { Id = 1, Name = "Product", Price = 10 };
+            var product = new Product { Id = 1, Description = "Product", SalePrice = 10 };
             var mockRepo = new Mock<IProductRepository>();
             mockRepo.Setup(r => r.GetByIdAsync(1))
                 .ReturnsAsync(product);
@@ -143,8 +145,8 @@ namespace SingularSystemsTests
         {
             var products = new List<Product>
             {
-                new Product { Id = 1, Name = "Product A", Price = 10, Sales = new List<Sale>() },
-                new Product { Id = 2, Name = "Product B", Price = 20, Sales = new List<Sale>() }
+                new Product { Id = 1, Description = "Product A", SalePrice = 10, Sales = new List<Sale>() },
+                new Product { Id = 2, Description = "Product B", SalePrice = 20, Sales = new List<Sale>() }
             };
             var mockRepo = new Mock<IProductRepository>();
             mockRepo.Setup(r => r.GetAllAsync())

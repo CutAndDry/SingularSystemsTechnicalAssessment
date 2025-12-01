@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace SingularSystemsTests
 {
@@ -24,8 +25,8 @@ namespace SingularSystemsTests
         public async Task GetFilteredAsync_ReturnsFilteredSales()
         {
             var context = GetInMemoryDb();
-            context.Products.Add(new Product { Id = 1, Name = "Product A", Price = 10 });
-            context.Sales.Add(new Sale { Id = 1, ProductId = 1, Quantity = 5, UnitPrice = 10, SaleDate = DateTime.UtcNow });
+            context.Products.Add(new Product { Id = 1, Description = "Product A", SalePrice = 10 });
+            context.Sales.Add(new Sale { Id = 1, ProductId = 1, SaleQty = 5, SalePrice = 10, SaleDate = DateTime.UtcNow });
             await context.SaveChangesAsync();
 
             var repo = new SaleRepository(context);
@@ -39,8 +40,8 @@ namespace SingularSystemsTests
         public async Task GetFilteredAsync_ReturnsEmptyWhenNoMatch()
         {
             var context = GetInMemoryDb();
-            context.Products.Add(new Product { Id = 1, Name = "Product A", Price = 10 });
-            context.Sales.Add(new Sale { Id = 1, ProductId = 1, Quantity = 5, UnitPrice = 10, SaleDate = DateTime.UtcNow });
+            context.Products.Add(new Product { Id = 1, Description = "Product A", SalePrice = 10 });
+            context.Sales.Add(new Sale { Id = 1, ProductId = 1, SaleQty = 5, SalePrice = 10, SaleDate = DateTime.UtcNow });
             await context.SaveChangesAsync();
 
             var repo = new SaleRepository(context);
@@ -54,10 +55,10 @@ namespace SingularSystemsTests
         {
             var context = GetInMemoryDb();
             var now = DateTime.UtcNow;
-            context.Products.Add(new Product { Id = 1, Name = "Product A", Price = 10 });
+            context.Products.Add(new Product { Id = 1, Description = "Product A", SalePrice = 10 });
             context.Sales.AddRange(
-                new Sale { Id = 1, ProductId = 1, Quantity = 5, UnitPrice = 10, SaleDate = now.AddDays(-5) },
-                new Sale { Id = 2, ProductId = 1, Quantity = 3, UnitPrice = 10, SaleDate = now }
+                new Sale { Id = 1, ProductId = 1, SaleQty = 5, SalePrice = 10, SaleDate = now.AddDays(-5) },
+                new Sale { Id = 2, ProductId = 1, SaleQty = 3, SalePrice = 10, SaleDate = now }
             );
             await context.SaveChangesAsync();
 
@@ -72,10 +73,10 @@ namespace SingularSystemsTests
         public async Task GetAllAsync_ReturnsAllSalesWithProducts()
         {
             var context = GetInMemoryDb();
-            context.Products.Add(new Product { Id = 1, Name = "Product A", Price = 10 });
+            context.Products.Add(new Product { Id = 1, Description = "Product A", SalePrice = 10 });
             context.Sales.AddRange(
-                new Sale { Id = 1, ProductId = 1, Quantity = 5, UnitPrice = 10, SaleDate = DateTime.UtcNow },
-                new Sale { Id = 2, ProductId = 1, Quantity = 3, UnitPrice = 10, SaleDate = DateTime.UtcNow }
+                new Sale { Id = 1, ProductId = 1, SaleQty = 5, SalePrice = 10, SaleDate = DateTime.UtcNow },
+                new Sale { Id = 2, ProductId = 1, SaleQty = 3, SalePrice = 10, SaleDate = DateTime.UtcNow }
             );
             await context.SaveChangesAsync();
 
@@ -90,8 +91,8 @@ namespace SingularSystemsTests
         public async Task GetByIdAsync_ReturnsSaleWithProduct()
         {
             var context = GetInMemoryDb();
-            context.Products.Add(new Product { Id = 1, Name = "Product A", Price = 10 });
-            context.Sales.Add(new Sale { Id = 1, ProductId = 1, Quantity = 5, UnitPrice = 10, SaleDate = DateTime.UtcNow });
+            context.Products.Add(new Product { Id = 1, Description = "Product A", SalePrice = 10 });
+            context.Sales.Add(new Sale { Id = 1, ProductId = 1, SaleQty = 5, SalePrice = 10, SaleDate = DateTime.UtcNow });
             await context.SaveChangesAsync();
 
             var repo = new SaleRepository(context);
@@ -99,34 +100,34 @@ namespace SingularSystemsTests
 
             Assert.NotNull(result);
             Assert.NotNull(result.Product);
-            Assert.Equal("Product A", result.Product.Name);
+            Assert.Equal("Product A", result.Product.Description);
         }
 
         [Fact]
         public async Task AddAsync_AddsSaleToDatabase()
         {
             var context = GetInMemoryDb();
-            context.Products.Add(new Product { Id = 1, Name = "Product A", Price = 10 });
+            context.Products.Add(new Product { Id = 1, Description = "Product A", SalePrice = 10 });
             await context.SaveChangesAsync();
 
-            var sale = new Sale { Id = 1, ProductId = 1, Quantity = 5, UnitPrice = 10, SaleDate = DateTime.UtcNow };
+            var sale = new Sale { Id = 1, ProductId = 1, SaleQty = 5, SalePrice = 10, SaleDate = DateTime.UtcNow };
             var repo = new SaleRepository(context);
             await repo.AddAsync(sale);
             await repo.SaveChangesAsync();
 
             var retrieved = await context.Sales.FindAsync(1);
             Assert.NotNull(retrieved);
-            Assert.Equal(5, retrieved.Quantity);
+            Assert.Equal(5, retrieved.SaleQty);
         }
 
         [Fact]
         public async Task GetFilteredAsync_PaginatesCorrectly()
         {
             var context = GetInMemoryDb();
-            context.Products.Add(new Product { Id = 1, Name = "Product A", Price = 10 });
+            context.Products.Add(new Product { Id = 1, Description = "Product A", SalePrice = 10 });
             for (int i = 1; i <= 25; i++)
             {
-                context.Sales.Add(new Sale { Id = i, ProductId = 1, Quantity = i, UnitPrice = 10, SaleDate = DateTime.UtcNow });
+                context.Sales.Add(new Sale { Id = i, ProductId = 1, SaleQty = i, SalePrice = 10, SaleDate = DateTime.UtcNow });
             }
             await context.SaveChangesAsync();
 

@@ -91,9 +91,8 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Infrastructure_Layer
                         var mapped = ext.Select(p => new Product
                         {
                             Id = p.id,
-                            Name = p.description ?? string.Empty,
                             Description = p.description,
-                            Price = Convert.ToDecimal(p.salePrice),
+                            SalePrice = Convert.ToDecimal(p.salePrice),
                             Category = p.category,
                             Image = p.image
                         }).ToList();
@@ -238,9 +237,8 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Infrastructure_Layer
             var mapped = ext.Select(p => new Product
             {
                 Id = p.id,
-                Name = p.description ?? string.Empty,
                 Description = p.description,
-                Price = Convert.ToDecimal(p.salePrice),
+                SalePrice = Convert.ToDecimal(p.salePrice),
                 Category = p.category,
                 Image = p.image
             }).ToList();

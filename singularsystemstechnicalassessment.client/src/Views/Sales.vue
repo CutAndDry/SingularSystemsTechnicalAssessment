@@ -20,7 +20,7 @@
           <input v-model="filters.endDate" type="date" />
         </div>
         <div class="filter-actions">
-          <button class="btn btn-secondary" @click="applyFilters">Apply Filters</button>
+          <button class="btn btn-primary" @click="applyFilters">Apply Filters</button>
           <button class="btn btn-outline" @click="resetFilters">Reset</button>
           <button class="btn btn-primary" @click="showAddModal = true">+ Add Sale</button>
         </div>
@@ -41,11 +41,11 @@
           </div>
           <div class="form-group">
             <label>Quantity *</label>
-            <input v-model.number="newSale.quantity" type="number" min="1" required placeholder="Enter quantity" />
+            <input v-model.number="newSale.saleQty" type="number" min="1" required placeholder="Enter quantity" />
           </div>
           <div class="form-group">
             <label>Unit Price (optional)</label>
-            <input v-model.number="newSale.unitPrice" type="number" step="0.01" placeholder="Enter unit price" />
+            <input v-model.number="newSale.salePrice" type="number" step="0.01" placeholder="Enter unit price" />
           </div>
           <div class="modal-actions">
             <button type="submit" class="btn btn-success">Add Sale</button>
@@ -62,11 +62,11 @@
           <thead>
             <tr>
               <th>ID</th>
-              <th>Product Name</th>
+              <th>Product</th>
               <th>Quantity</th>
               <th>Unit Price</th>
               <th>Total</th>
-              <th>Sale Date</th>
+              <th>Date</th>
             </tr>
           </thead>
           <tbody>
@@ -74,13 +74,23 @@
               <td colspan="6">&nbsp;</td>
             </tr>
 
-            <tr v-for="sale in sales" :key="sale.id">
+            <!-- clickable sale rows -->
+            <tr
+              v-for="sale in sales"
+              :key="sale.id"
+              tabindex="0"
+              role="button"
+              class="clickable-row"
+              @click="openSale(sale)"
+              @keydown.enter.prevent="openSale(sale)"
+              @keydown.space.prevent="openSale(sale)"
+            >
               <td>{{ sale.id }}</td>
-              <td>{{ sale.productName }}</td>
-              <td>{{ sale.quantity }}</td>
-              <td>${{ (sale.unitPrice || 0).toFixed(2) }}</td>
-              <td>${{ ((sale.quantity || 0) * (sale.unitPrice || 0)).toFixed(2) }}</td>
-              <td>{{ new Date(sale.saleDate).toLocaleString() }}</td>
+              <td>{{ sale.product?.description ?? sale.productName ?? '-' }}</td>
+              <td>{{ sale.saleQty ?? sale.quantity ?? sale.qty ?? '-' }}</td>
+              <td>{{ formatPrice(sale.salePrice ?? sale.unitPrice ?? sale.price) }}</td>
+              <td>{{ formatPrice((sale.saleQty ?? sale.quantity ?? sale.qty ?? 0) * (sale.salePrice ?? sale.unitPrice ?? sale.price ?? 0)) }}</td>
+              <td>{{ formatDate(sale.saleDate ?? sale.date) }}</td>
             </tr>
 
             <tr v-if="!loading && sales.length === 0">
@@ -88,6 +98,72 @@
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- sale modal (inline so Edit button sits inside the popup) -->
+    <div v-if="showSaleModal" class="modal-overlay" @click.self="closeSaleModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Sale Details</h3>
+          <button class="modal-close" @click="closeSaleModal">&times;</button>
+        </div>
+
+        <div class="modal-form" style="padding:1rem;">
+          <div style="display:flex;gap:1.5rem;align-items:flex-start;">
+            <div style="flex:1">
+              <p><strong>ID:</strong> {{ selectedSale?.id ?? '-' }}</p>
+              <p><strong>Product ID:</strong> {{ selectedSale?.productId ?? '-' }}</p>
+              <p><strong>Product:</strong> {{ selectedSale?.product?.description ?? selectedSale?.productName ?? '-' }}</p>
+              <p><strong>Quantity:</strong> {{ selectedSale?.saleQty ?? selectedSale?.quantity ?? '-' }}</p>
+              <p><strong>Unit Price:</strong> {{ formatPrice(selectedSale?.salePrice ?? selectedSale?.unitPrice ?? null) }}</p>
+              <p><strong>Date:</strong> {{ formatDate(selectedSale?.saleDate ?? selectedSale?.date) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions" style="justify-content:flex-end; padding:1rem;">
+          <button class="btn btn-primary" @click="openEditSaleFromDetails">Edit</button>
+          <button class="btn btn-secondary" @click="closeSaleModal">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Sale Modal -->
+    <div v-if="showEditSaleModal" class="modal-overlay" @click.self="closeEditModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Edit Sale</h3>
+          <button class="modal-close" @click="closeEditModal">&times;</button>
+        </div>
+        <form @submit.prevent="submitEditSale" class="modal-form">
+          <div class="form-group">
+            <label>Product *</label>
+            <select v-model.number="editSale.productId" required>
+              <option :value="null" disabled>Select product</option>
+              <option v-for="p in productsList" :key="p.id" :value="p.id">
+                {{ p.description || ('Product ' + p.id) }}
+              </option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Quantity *</label>
+            <input v-model.number="editSale.saleQty" type="number" min="1" required />
+          </div>
+          <div class="form-group">
+            <label>Unit Price *</label>
+            <input v-model.number="editSale.salePrice" type="number" step="0.01" required />
+          </div>
+          <div class="form-group">
+            <label>Sale Date *</label>
+            <input v-model="editSale.saleDateLocal" type="datetime-local" required />
+          </div>
+
+          <div class="modal-actions">
+            <button type="submit" class="btn btn-success" :disabled="submitting">Save</button>
+            <button type="button" class="btn btn-secondary" @click="closeEditModal">Cancel</button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -101,7 +177,9 @@
 </template>
 
 <script>
-import { getSales, getAllSales, addSale } from "../Services/salesService";
+import { ref, onMounted } from 'vue';
+import { getSales, getAllSales, addSale, updateSale } from "../Services/salesService";
+import { getAllProducts } from "../Services/productService"; // added
 
 export default {
   name: "Sales",
@@ -126,9 +204,17 @@ export default {
       },
       newSale: {
         productId: null,
-        quantity: 1,
-        unitPrice: null
-      }
+        saleQty: 1,
+        salePrice: null
+      },
+      // modal state
+      selectedSale: null,
+      showSaleModal: false,
+      // edit sale modal
+      showEditSaleModal: false,
+      editSale: { id: 0, productId: null, saleQty: 1, salePrice: null, saleDateLocal: '' },
+      submitting: false,
+      productsList: [], // NEW: product dropdown data
     };
   },
 
@@ -197,7 +283,7 @@ export default {
     async submitAddSale() {
       try {
         await addSale(this.newSale);
-        this.newSale = { productId: null, quantity: 1, unitPrice: null };
+        this.newSale = { productId: null, saleQty: 1, salePrice: null };
         this.showAddModal = false;
         this.fetchSales();
       } catch (err) {
@@ -221,11 +307,98 @@ export default {
         this.pageNumber--;
         this.fetchSales();
       }
+    },
+
+    openSale(sale) {
+      this.selectedSale = sale;
+      this.showSaleModal = true;
+    },
+
+    closeSaleModal() {
+      this.showSaleModal = false;
+      this.selectedSale = null;
+    },
+
+    openEditSaleFromDetails() {
+      if (!this.selectedSale) return;
+      const s = this.selectedSale;
+      const dt = s.saleDate ? new Date(s.saleDate) : (s.date ? new Date(s.date) : new Date());
+      const local = new Date(dt.getTime() - dt.getTimezoneOffset() * 60000).toISOString().slice(0,16);
+      this.editSale = {
+        id: s.id,
+        productId: s.productId ?? (s.product && s.product.id) ?? null, // prefill id
+        saleQty: s.saleQty ?? s.quantity ?? 1,
+        salePrice: Number(s.salePrice ?? s.unitPrice ?? 0),
+        saleDateLocal: local
+      };
+      // ensure products list available
+      if (!this.productsList || this.productsList.length === 0) {
+        this.fetchProductsList();
+      }
+      this.showEditSaleModal = true;
+    },
+
+    closeEditModal() {
+      this.showEditSaleModal = false;
+    },
+
+    async submitEditSale() {
+      if (!this.editSale.id) return;
+      if (this.editSale.productId == null) {
+        alert("Please select a product.");
+        return;
+      }
+      this.submitting = true;
+      try {
+        const iso = new Date(this.editSale.saleDateLocal).toISOString();
+        await updateSale(this.editSale.id, {
+          productId: this.editSale.productId,
+          saleQty: this.editSale.saleQty,
+          salePrice: this.editSale.salePrice,
+          saleDate: iso
+        });
+        await this.fetchSales();
+        this.showEditSaleModal = false;
+        this.showSaleModal = false;
+        this.selectedSale = null;
+      } catch (err) {
+        console.error('Error updating sale:', err);
+        alert('Failed to update sale: ' + (err?.message || 'unknown'));
+      } finally {
+        this.submitting = false;
+      }
+    },
+
+    async fetchProductsList() { // NEW
+      try {
+        const res = await getAllProducts(1, 1000); // large page to get all
+        const data = res.data || {};
+        this.productsList = data.items || data.Items || [];
+      } catch (err) {
+        console.warn("Failed to load products for dropdown", err);
+        this.productsList = [];
+      }
+    },
+
+    formatPrice(v) {
+      if (v == null || isNaN(Number(v))) return '-';
+      return Number(v).toLocaleString(undefined, { style:'currency', currency:'USD' });
+    },
+
+    formatDate(d) {
+      if (!d) return '-';
+      const dt = new Date(d);
+      return isNaN(dt.getTime()) ? String(d) : dt.toLocaleString();
     }
   },
 
   mounted() {
     this.fetchSales();
+    this.fetchProductsList(); // NEW: load products for selects
+  },
+
+  computed: {
+    // Remove local slicing; rely on server pagination
   }
 };
 </script>
@@ -558,6 +731,10 @@ export default {
   .page-header h1 {
     font-size: 1.5rem;
   }
+}
+
+.clickable-row {
+  cursor: pointer;
 }
 </style>
 

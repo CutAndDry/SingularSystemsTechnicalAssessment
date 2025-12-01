@@ -1,12 +1,14 @@
-﻿namespace SingularSystemsTechnicalAssessment.Server.src.Application_Layer.DTO_s
+﻿using Microsoft.AspNetCore.Http;
+
+namespace SingularSystemsTechnicalAssessment.Server.src.Application_Layer.DTO_s
 {
 
 
     public class ProductListDto
     {
         public int Id { get; set; }
-        public string Name { get; set; } = null!;
-        public decimal Price { get; set; }
+        public string? Description { get; set; }
+        public decimal SalePrice { get; set; }
         public string? Category { get; set; }
         public string? Image { get; set; }
 
@@ -17,9 +19,8 @@
     public class ProductDetailDto
     {
         public int Id { get; set; }
-        public string Name { get; set; } = null!;
         public string? Description { get; set; }
-        public decimal Price { get; set; }
+        public decimal SalePrice { get; set; }
         public string? Category { get; set; }
         public string? Image { get; set; }
 
@@ -31,17 +32,24 @@
 
     public class ProductCreateDto
     {
-        public string Name { get; set; } = null!;
         public string? Description { get; set; }
-        public decimal Price { get; set; }
+        public decimal SalePrice { get; set; }
         public string? Category { get; set; }
         public string? Image { get; set; }
     }
+
+    public class ProductCreateFormDto
+    {
+        public string? Description { get; set; }
+        public decimal SalePrice { get; set; }
+        public string? Category { get; set; }
+        public IFormFile? Image { get; set; }
+    }
+
     public class ProductUpdateDto
     {
-        public string Name { get; set; } = null!;
         public string? Description { get; set; }
-        public decimal Price { get; set; }
+        public decimal SalePrice { get; set; }
         public string? Category { get; set; }
         public string? Image { get; set; }
     }

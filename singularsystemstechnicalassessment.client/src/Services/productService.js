@@ -49,8 +49,67 @@ export const getAllProducts = async (pageNumber = 1, pageSize = 10) => {
   });
 };
 
-// Create product
-export const createProduct = async (product) => {
-  const base = await detectBaseUrl();
-  return axios.post(base, product);
+// Create product: accepts FormData (with file) or plain object
+export async function createProduct(payload) {
+  const base = await detectBaseUrl(); // e.g. http://localhost:5075/api/products
+
+  if (payload instanceof FormData) {
+    const res = await fetch(base, { method: 'POST', body: payload });
+
+    if (!res.ok) {
+      let body;
+      try { body = await res.json(); }
+      catch { body = await res.text().catch(()=>null); }
+      throw new Error((body && body.message) || body || `Request failed ${res.status}`);
+    }
+
+    // If no JSON body (e.g. 201 Created with empty body), return null
+    const contentLength = res.headers.get('content-length');
+    const contentType = (res.headers.get('content-type') || '').toLowerCase();
+    if ((contentLength === '0') || (!contentType.includes('application/json') && res.status === 201)) {
+      return null;
+    }
+
+    try { return await res.json(); } catch { return null; }
+  } else {
+    // plain object -> send JSON
+    const res = await fetch(`${base}/json`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      let body;
+      try { body = await res.json(); }
+      catch { body = await res.text().catch(()=>null); }
+      throw new Error((body && body.message) || body || `Request failed ${res.status}`);
+    }
+
+    const contentLength = res.headers.get('content-length');
+    const contentType = (res.headers.get('content-type') || '').toLowerCase();
+    if ((contentLength === '0') || !contentType.includes('application/json')) {
+      return null;
+    }
+
+    try { return await res.json(); } catch { return null; }
+  }
 };
+
+export async function updateProduct(id, payload) {
+  const base = await detectBaseUrl(); // e.g. http://localhost:5075/api/products
+  const res = await fetch(`${base}/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  if (!res.ok) {
+    let body;
+    try { body = await res.json(); }
+    catch { body = await res.text().catch(()=>null); }
+    throw new Error((body && body.message) || body || `Request failed ${res.status}`);
+  }
+
+  // No body expected on 204
+  return null;
+}
