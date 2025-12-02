@@ -1,5 +1,5 @@
 import { addSale } from './salesService.js';
-// Test for salesService module
+
 // This test verifies that the salesService module exports expected functions
 
 import test from 'node:test';

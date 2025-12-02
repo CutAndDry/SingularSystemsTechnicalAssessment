@@ -1,5 +1,5 @@
 import { getAllProducts } from './productService.js';
-// Test for productService module
+
 // This test verifies that the productService module exports expected functions
 
 import test from 'node:test';

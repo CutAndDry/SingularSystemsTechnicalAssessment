@@ -9,10 +9,7 @@ export interface SaleDetailDto {
   id: number;
   productId: number;
   productName: string;
-
-  // Support both variants used across the client / server responses:
-  // - saleQty / salePrice / saleDate (preferred in many places)
-  // - quantity / unitPrice / date (alternate sources)
+  
   saleQty?: number;
   quantity?: number;
 

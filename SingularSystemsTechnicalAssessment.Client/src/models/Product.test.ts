@@ -1,5 +1,5 @@
-// Test for Product models
-// This test verifies the Product model structure
+
+// This test verifies Product model structure
 
 import test from 'node:test';
 import assert from 'node:assert';

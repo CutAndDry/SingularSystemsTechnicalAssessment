@@ -1,10 +1,6 @@
 import axios from 'axios';
 
-// Try to detect a working backend base URL. Order is:
-// 1) Vite env var VITE_API_URL (if set)
-// 2) http://localhost:5075
-// 3) http://localhost:5074
-// 4) window.location.origin (same origin)
+// Try to detect a working backend base URL.
 const CANDIDATES = [
   (import.meta.env && import.meta.env.VITE_API_URL) || null,
   'http://localhost:5075',
@@ -33,7 +29,7 @@ async function detectBaseUrl() {
         // ignore and try next
       }
     }
-    // fallback to first candidate (will likely fail but let caller handle errors)
+    // fallback to first candidate will likely fail but let caller handle errors
     _detectedBase = CANDIDATES[0].replace(/\/$/, '') + '/api/products';
     return _detectedBase;
   })();
@@ -49,7 +45,7 @@ export const getAllProducts = async (pageNumber = 1, pageSize = 10) => {
   });
 };
 
-// Create product: accepts FormData (with file) or plain object
+// Create product: accepts FormData 
 export async function createProduct(payload) {
   const base = await detectBaseUrl(); // e.g. http://localhost:5075/api/products
 
@@ -63,7 +59,7 @@ export async function createProduct(payload) {
       throw new Error((body && body.message) || body || `Request failed ${res.status}`);
     }
 
-    // If no JSON body (e.g. 201 Created with empty body), return null
+    // Created with empty body return null
     const contentLength = res.headers.get('content-length');
     const contentType = (res.headers.get('content-type') || '').toLowerCase();
     if ((contentLength === '0') || (!contentType.includes('application/json') && res.status === 201)) {

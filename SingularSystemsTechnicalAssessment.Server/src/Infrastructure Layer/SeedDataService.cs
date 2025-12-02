@@ -38,7 +38,7 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Infrastructure_Layer
             _env = env ?? throw new ArgumentNullException(nameof(env));
         }
 
-        // Public method to seed both products and sales into the provided in-memory DB.
+        //  method to seed products and sales info into in-memory DB.
         public async Task SeedAsync()
         {
             _logger.LogInformation("Starting external seed process...");
@@ -56,7 +56,7 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Infrastructure_Layer
                 }
             }
 
-            // Only add if not already present to avoid duplicates on restart.
+            // Only add if not already present to avoid duplicates.
             if (products.Any() && !_db.Products.Any())
             {
                 _db.Products.AddRange(products);
@@ -238,6 +238,7 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Infrastructure_Layer
             }
         }
 
+
         private async Task<List<Sale>> FetchSalesWithRetryAsync(int maxAttempts = 3)
         {
             int attempt = 0;
@@ -323,6 +324,16 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Infrastructure_Layer
             }
         }
 
+
+
+
+
+
+#region TLS Cert Errror on my PC (I think its from a creackd windows install)
+    
+        // Had to make a local fallback loader due to TLS cert errors on my development PC.
+        // These methods load from local JSON files placed in a "SeedData" folder under the project root.
+        // no longer in use now that the external endpoints are working correctly.
         private List<Product>? LoadProductsFromLocalFile()
         {
             var file = Path.Combine(Directory.GetCurrentDirectory(), "SeedData", "products.json");
@@ -371,6 +382,8 @@ namespace SingularSystemsTechnicalAssessment.Server.src.Infrastructure_Layer
 
             return list;
         }
+
+#endregion
 
         private class ExternalProduct
         {

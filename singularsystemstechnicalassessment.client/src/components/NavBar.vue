@@ -73,10 +73,10 @@ function closeMobile() {
 }
 
 function closeOnBackdrop(e) {
-  // clicking on aside self should not close; backdrop handles it
+ 
 }
 
-// keep CSS variable --sidebar-width in sync with state so layout shifts
+
 function applySidebarWidth() {
   const root = document.documentElement;
   if (isMobile.value) {
@@ -91,7 +91,7 @@ onMounted(() => {
   updateIsMobile();
   applySidebarWidth();
   window.addEventListener('resize', onResize);
-  // restore persisted mobile menu state (helps if NavBar is remounted)
+  // restore persisted mobile menu state 
   try {
     const persisted = localStorage.getItem('mobileMenuOpen');
     if (persisted === '1') {

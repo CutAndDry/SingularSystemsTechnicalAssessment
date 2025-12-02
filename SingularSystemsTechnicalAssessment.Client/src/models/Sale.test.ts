@@ -1,5 +1,5 @@
-// Test for Sale models
-// This test verifies the Sale model structure
+
+// This test verifies Sale model structure
 
 import test from 'node:test';
 import assert from 'node:assert';

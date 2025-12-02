@@ -1,6 +1,6 @@
 import axios from "axios";
 
-// Reuse the same detection strategy as productService: probe likely backend URLs and cache a working base.
+// Try to detect a working backend base URL.
 const CANDIDATES = [
   (import.meta.env && import.meta.env.VITE_API_URL) || null,
   'http://localhost:5075',
